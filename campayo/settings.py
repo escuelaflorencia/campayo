@@ -2,7 +2,20 @@
 import os
 import dj_database_url
 from pathlib import Path
-from decouple import config
+
+# Intentar importar decouple, usar os.environ como fallback
+try:
+    from decouple import config
+except ImportError:
+    # Fallback si decouple no está instalado
+    def config(key, default=None, cast=None):
+        value = os.environ.get(key, default)
+        if cast and value is not None:
+            if cast == bool:
+                return value.lower() in ('true', '1', 'yes', 'on')
+            else:
+                return cast(value)
+        return value
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -81,11 +94,13 @@ WSGI_APPLICATION = 'campayo.wsgi.application'
 # ============================================================================
 
 # Base de datos - Configuración para desarrollo y producción
-if config('DATABASE_URL', default=None):
+DATABASE_URL = config('DATABASE_URL', default=None)
+
+if DATABASE_URL and DATABASE_URL.strip():
     # Configuración para producción (Render, Heroku, etc.)
     DATABASES = {
         'default': dj_database_url.parse(
-            config('DATABASE_URL'),
+            DATABASE_URL,
             conn_max_age=600,
             conn_health_checks=True
         )
@@ -299,7 +314,7 @@ if not DEBUG:
 # ============================================================================
 
 # Validar que las variables de entorno críticas estén configuradas en producción
-if not DEBUG:
+if not DEBUG and 'RENDER' in os.environ:
     required_env_vars = ['SECRET_KEY', 'DATABASE_URL']
     missing_vars = [var for var in required_env_vars if not config(var, default=None)]
     
