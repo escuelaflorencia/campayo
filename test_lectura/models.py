@@ -62,11 +62,12 @@ class TestLectura(models.Model):
         """
         Verifica si un usuario puede acceder a este test.
         LÓGICA DE DESBLOQUEO CORREGIDA:
-        - test_inicial: siempre accesible
-        - test_1: requiere TODOS los ejercicios del bloque 1 completados
-        - test_2: requiere TODOS los ejercicios del bloque 2 completados
-        - Otros tests: requieren TODOS los ejercicios del bloque 3 completados
+        - test_inicial: SIEMPRE accesible para cualquier usuario registrado
+        - test_1: requiere test_inicial completado Y todos los ejercicios del bloque 1
+        - test_2: requiere test_1 completado Y todos los ejercicios del bloque 2
+        - Otros tests: requieren test_2 completado Y todos los ejercicios del bloque 3
         """
+        # Verificaciones básicas
         if not self.activo:
             return False, "Test no disponible"
         
@@ -84,58 +85,71 @@ class TestLectura(models.Model):
         
         # LÓGICA DE DESBLOQUEO ESPECÍFICA
         if self.nombre == 'test_inicial':
-            # Test inicial siempre disponible (es el primero que se hace)
+            # TEST INICIAL: SIEMPRE ACCESIBLE para usuarios registrados
             return True, ""
         
         elif self.nombre == 'test_1':
-            # test_1 requiere que el test_inicial esté completado Y todos los ejercicios del bloque 1
+            # TEST 1: requiere test_inicial completado Y bloque 1 completado
             from usuarios.models import ProgresoTests
             
             # Verificar test_inicial completado
-            if not ProgresoTests.objects.filter(
+            test_inicial_completado = ProgresoTests.objects.filter(
                 usuario=usuario,
                 test_nombre='test_inicial',
                 completado=True
-            ).exists():
+            ).exists()
+            
+            if not test_inicial_completado:
                 return False, "Debes completar primero el Test Inicial"
             
             # Verificar bloque 1 completado completamente
             if not usuario.bloque_completado(1):
                 return False, "Debes completar todos los ejercicios del Bloque 1 (niveles 1, 2 y 3)"
+            
+            # Si llegamos aquí, puede acceder
+            return True, ""
         
         elif self.nombre == 'test_2':
-            # test_2 requiere test_1 completado Y todos los ejercicios del bloque 2
+            # TEST 2: requiere test_1 completado Y bloque 2 completado
             from usuarios.models import ProgresoTests
             
             # Verificar test_1 completado
-            if not ProgresoTests.objects.filter(
+            test_1_completado = ProgresoTests.objects.filter(
                 usuario=usuario,
                 test_nombre='test_1',
                 completado=True
-            ).exists():
+            ).exists()
+            
+            if not test_1_completado:
                 return False, "Debes completar primero el Test 1"
             
             # Verificar bloque 2 completado completamente
             if not usuario.bloque_completado(2):
                 return False, "Debes completar todos los ejercicios del Bloque 2 (niveles 4, 5 y 6)"
+            
+            # Si llegamos aquí, puede acceder
+            return True, ""
         
         else:
-            # Resto de tests: requieren test_2 completado Y bloque 3 completado
+            # RESTO DE TESTS: requieren test_2 completado Y bloque 3 completado
             from usuarios.models import ProgresoTests
             
             # Verificar test_2 completado
-            if not ProgresoTests.objects.filter(
+            test_2_completado = ProgresoTests.objects.filter(
                 usuario=usuario,
                 test_nombre='test_2',
                 completado=True
-            ).exists():
+            ).exists()
+            
+            if not test_2_completado:
                 return False, "Debes completar primero el Test 2"
             
             # Verificar bloque 3 completado completamente
             if not usuario.bloque_completado(3):
                 return False, "Debes completar todos los ejercicios del Bloque 3 (niveles 7, 8 y 9)"
-        
-        return True, ""
+            
+            # Si llegamos aquí, puede acceder
+            return True, ""
 
 
 class PreguntaTest(models.Model):

@@ -35,8 +35,8 @@
             color: var(--text);
             display: flex;
             align-items: center;
-            min-width: 40px;
-            min-height: 40px;
+            min-width: 44px;
+            min-height: 44px;
         }
 
         .test-title-header {
@@ -50,6 +50,14 @@
             max-width: 900px;
             margin: 0 auto;
             padding: var(--space-lg);
+            padding-bottom: 120px;
+        }
+
+        @media (max-width: 768px) {
+            .test-container-full {
+                padding: var(--space-md);
+                padding-bottom: 100px;
+            }
         }
 
         /* FASE LECTURA */
@@ -62,11 +70,23 @@
             margin-bottom: var(--space-xl);
         }
 
+        @media (max-width: 768px) {
+            .timer-card {
+                padding: var(--space-xl);
+            }
+        }
+
         .timer-display-big {
             font-family: 'Courier New', monospace;
-            font-size: 4rem;
+            font-size: 3.5rem;
             font-weight: 700;
             margin-bottom: var(--space-md);
+        }
+
+        @media (max-width: 768px) {
+            .timer-display-big {
+                font-size: 2.5rem;
+            }
         }
 
         .timer-label {
@@ -84,6 +104,14 @@
             display: none;
         }
 
+        @media (max-width: 768px) {
+            .reading-text-area {
+                padding: var(--space-lg);
+                font-size: 1rem;
+                line-height: 1.7;
+            }
+        }
+
         .reading-text-area.visible {
             display: block;
         }
@@ -92,6 +120,12 @@
             font-size: 1.5rem;
             margin-bottom: var(--space-lg);
             color: var(--text);
+        }
+
+        @media (max-width: 768px) {
+            .reading-title {
+                font-size: 1.25rem;
+            }
         }
 
         /* FASE PREGUNTAS */
@@ -106,20 +140,34 @@
             z-index: 50;
         }
 
+        @media (max-width: 768px) {
+            .questions-header {
+                padding: var(--space-md);
+                top: 65px;
+            }
+        }
+
         .progress-info {
             display: flex;
             justify-content: space-between;
             align-items: center;
             margin-bottom: var(--space-md);
+            gap: var(--space-sm);
         }
 
         .questions-counter {
-            font-size: 2rem;
+            font-size: 1.75rem;
             font-weight: 700;
         }
 
+        @media (max-width: 768px) {
+            .questions-counter {
+                font-size: 1.25rem;
+            }
+        }
+
         .progress-bar-full {
-            height: 8px;
+            height: 6px;
             background: rgba(255,255,255,0.3);
             border-radius: var(--radius-full);
             overflow: hidden;
@@ -137,7 +185,13 @@
             padding: var(--space-xl);
             margin-bottom: var(--space-lg);
             box-shadow: var(--shadow-sm);
-            scroll-margin-top: 180px;
+        }
+
+        @media (max-width: 768px) {
+            .question-card {
+                padding: var(--space-md);
+                margin-bottom: var(--space-md);
+            }
         }
 
         .question-number-badge {
@@ -151,6 +205,7 @@
             justify-content: center;
             font-weight: 700;
             margin-bottom: var(--space-md);
+            font-size: 0.875rem;
         }
 
         .question-text {
@@ -158,6 +213,13 @@
             font-weight: 600;
             margin-bottom: var(--space-lg);
             line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .question-text {
+                font-size: 1rem;
+                margin-bottom: var(--space-md);
+            }
         }
 
         .option-item {
@@ -168,6 +230,16 @@
             margin-bottom: var(--space-sm);
             cursor: pointer;
             transition: var(--transition);
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .option-item {
+                padding: var(--space-sm) var(--space-md);
+                min-height: 52px;
+            }
         }
 
         .option-item:hover {
@@ -188,6 +260,7 @@
             align-items: center;
             gap: var(--space-md);
             cursor: pointer;
+            width: 100%;
         }
 
         .option-check {
@@ -215,15 +288,32 @@
             font-size: 14px;
         }
 
+        .option-text {
+            flex: 1;
+            line-height: 1.5;
+        }
+
         /* Botón de envío sticky al final */
         .submit-section {
-            position: sticky;
+            position: fixed;
             bottom: 0;
-            background: linear-gradient(to top, var(--bg) 0%, var(--bg) 70%, rgba(255,255,255,0) 100%);
-            padding: var(--space-xl) 0;
-            margin-top: var(--space-xl);
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, var(--bg) 60%, rgba(255,255,255,0) 100%);
+            padding: var(--space-xl) var(--space-lg);
             text-align: center;
             z-index: 40;
+        }
+
+        @media (max-width: 768px) {
+            .submit-section {
+                padding: var(--space-md);
+            }
+        }
+
+        .submit-section-inner {
+            max-width: 900px;
+            margin: 0 auto;
         }
 
         /* Modal */
@@ -231,9 +321,9 @@
             position: fixed;
             top: 0;
             left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.6);
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.7);
             z-index: 1000;
             display: none;
             align-items: center;
@@ -241,14 +331,24 @@
             padding: var(--space-lg);
         }
 
-        .modal-overlay.active { display: flex; }
+        .modal-overlay.active {
+            display: flex;
+        }
 
         .modal-box {
             background: var(--bg-card);
             border-radius: var(--radius-lg);
-            padding: var(--space-2xl);
-            max-width: 400px;
+            padding: var(--space-xl);
+            max-width: 500px;
             width: 100%;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        @media (max-width: 768px) {
+            .modal-box {
+                padding: var(--space-lg);
+                max-width: 90vw;
+            }
         }
 
         .modal-title {
@@ -257,152 +357,188 @@
             margin-bottom: var(--space-md);
         }
 
+        .modal-message {
+            margin-bottom: var(--space-xl);
+            line-height: 1.6;
+        }
+
         .modal-actions {
             display: flex;
-            gap: var(--space-md);
-            margin-top: var(--space-lg);
+            gap: var(--space-sm);
+            justify-content: flex-end;
         }
 
-        .modal-actions button {
-            flex: 1;
-        }
-
-        /* Indicador de progreso para móvil */
         @media (max-width: 768px) {
-            .questions-counter {
-                font-size: 1.5rem;
+            .modal-actions {
+                flex-direction: column-reverse;
             }
+        }
 
-            .question-card {
-                padding: var(--space-lg);
-            }
+        .btn {
+            padding: var(--space-md) var(--space-xl);
+            border-radius: var(--radius-md);
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-sm);
+            justify-content: center;
+            font-size: 1rem;
+            min-height: 48px;
+        }
 
-            .submit-section {
-                padding: var(--space-lg) 0;
+        @media (max-width: 768px) {
+            .btn {
+                min-height: 52px;
+                width: 100%;
             }
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: var(--bg);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn i {
+            font-size: 1.25rem;
         }
     </style>
 </head>
 <body>
-    {% csrf_token %}
-    <!-- Header fijo -->
-    <header class="test-header">
-        <button class="btn-back-test" onclick="confirmarSalir()">
+    <!-- Header -->
+    <div class="test-header">
+        <button class="btn-back-test" onclick="confirmarSalir()" aria-label="Volver atrás">
             <i class="bi bi-arrow-left" style="font-size: 1.5rem;"></i>
         </button>
         <div class="test-title-header">{{ test.titulo }}</div>
-    </header>
+    </div>
 
     <div class="test-container-full">
         {% if fase == 'lectura' %}
         <!-- FASE LECTURA -->
         <div class="timer-card">
-            <div class="timer-display-big" id="timerDisplay">00:00</div>
             <div class="timer-label">Tiempo de lectura</div>
-            <button id="startReadingBtn" class="btn btn-lg" style="margin-top: 24px; background: white; color: var(--primary);">
-                <i class="bi bi-play-fill"></i> Comenzar a Leer
+            <div class="timer-display-big" id="timerDisplay">00:00</div>
+        </div>
+
+        <div style="text-align: center; margin-bottom: var(--space-xl);">
+            <button id="startReadingBtn" class="btn btn-primary">
+                <i class="bi bi-play-fill"></i>
+                Comenzar a leer
+            </button>
+            <button id="finishReadingBtn" class="btn btn-primary" disabled style="display: none;">
+                <i class="bi bi-check-circle"></i>
+                He terminado de leer
             </button>
         </div>
 
-        <div class="card">
-            <div class="card-body">
-                <h3><i class="bi bi-info-circle"></i> Instrucciones</h3>
-                <ol style="line-height: 1.8;">
-                    <li>Pulse "Comenzar a Leer" cuando esté listo</li>
-                    <li>Lea el texto con tranquilidad y a su ritmo natural</li>
-                    <li>Al terminar, pulse "He terminado de leer"</li>
-                    <li>Después responderá 20 preguntas sobre el texto</li>
-                </ol>
-            </div>
-        </div>
-
-        <div class="reading-text-area" id="readingArea">
-            <h2 class="reading-title">{{ test.texto_titulo }}</h2>
-            <div>{{ test.texto_contenido|linebreaks }}</div>
-        </div>
-
-        <div style="text-align: center; margin-top: 32px;">
-            <button id="finishReadingBtn" class="btn btn-primary btn-lg" disabled>
-                <i class="bi bi-check-circle"></i> He terminado de leer
-            </button>
+        <div id="readingArea" class="reading-text-area">
+            <h2 class="reading-title">{{ test.titulo }}</h2>
+            <div>{{ test.texto|safe }}</div>
         </div>
 
         {% elif fase == 'preguntas' %}
-        <!-- FASE DE PREGUNTAS - TODAS VISIBLES CON SCROLL -->
+        <!-- FASE PREGUNTAS -->
         <div class="questions-header">
             <div class="progress-info">
-                <h2 style="color: white; margin: 0;">Preguntas</h2>
                 <div class="questions-counter">
-                    <span id="currentQ">0</span>/<span id="totalQ">{{ preguntas|length }}</span>
+                    <span id="currentQ">0</span> / {{ preguntas|length }}
                 </div>
             </div>
             <div class="progress-bar-full">
-                <div class="progress-fill" id="progressBar"></div>
+                <div class="progress-fill" id="progressBar" style="width: 0%"></div>
             </div>
         </div>
 
         <form id="questionsForm" method="post">
             {% csrf_token %}
-            
-            <!-- Todas las preguntas visibles -->
             {% for pregunta in preguntas %}
             <div class="question-card" id="question-{{ forloop.counter }}">
                 <div class="question-number-badge">{{ forloop.counter }}</div>
-                <div class="question-text">{{ pregunta.pregunta }}</div>
+                <div class="question-text">{{ pregunta.texto }}</div>
                 
                 {% for opcion in pregunta.opciones.all %}
-                <div class="option-item" data-question="{{ pregunta.id }}" data-option="{{ opcion.id }}">
-                    <input type="radio" name="pregunta_{{ pregunta.id }}" value="{{ opcion.id }}" id="opt_{{ pregunta.id }}_{{ opcion.id }}">
-                    <label class="option-label" for="opt_{{ pregunta.id }}_{{ opcion.id }}">
+                <div class="option-item" 
+                     data-question="{{ pregunta.id }}" 
+                     data-option="{{ opcion.id }}">
+                    <label class="option-label">
                         <div class="option-check"></div>
-                        <div>{{ opcion.texto }}</div>
+                        <div class="option-text">{{ opcion.texto }}</div>
+                        <input 
+                            type="radio" 
+                            name="pregunta_{{ pregunta.id }}" 
+                            value="{{ opcion.id }}" 
+                            id="opt_{{ pregunta.id }}_{{ opcion.id }}"
+                        >
                     </label>
                 </div>
                 {% endfor %}
             </div>
             {% endfor %}
-
-            <!-- Sección de envío sticky -->
-            <div class="submit-section">
-                <button type="button" id="submitAnswersBtn" class="btn btn-primary btn-lg" disabled>
-                    <i class="bi bi-send"></i> Enviar Respuestas
-                </button>
-                <p style="margin-top: var(--space-sm); font-size: 0.875rem; color: var(--text-light);">
-                    Responde todas las preguntas para continuar
-                </p>
-            </div>
         </form>
+
+        <div class="submit-section">
+            <div class="submit-section-inner">
+                <button id="submitAnswersBtn" class="btn btn-primary" disabled>
+                    <i class="bi bi-send"></i>
+                    Enviar Respuestas (0/{{ preguntas|length }})
+                </button>
+            </div>
+        </div>
+
+        {% else %}
+        <!-- RESULTADOS -->
+        <div class="timer-card" style="background: linear-gradient(135deg, #4A7C59 0%, #2d5a3d 100%);">
+            <i class="bi bi-trophy" style="font-size: 3rem; margin-bottom: var(--space-md);"></i>
+            <h2 style="margin-bottom: var(--space-md);">¡Test Completado!</h2>
+            <p style="opacity: 0.9;">Tu puntuación: <strong>{{ sesion.calcular_puntuacion_final }}%</strong></p>
+        </div>
+
+        <div style="text-align: center; margin-top: var(--space-xl);">
+            <a href="{% url 'test_lectura:lista_tests' %}" class="btn btn-primary">
+                <i class="bi bi-house"></i>
+                Volver a Tests
+            </a>
+        </div>
         {% endif %}
     </div>
 
-    <!-- Modal confirmación -->
-    <div class="modal-overlay" id="confirmModal">
+    <!-- Modal -->
+    <div id="confirmModal" class="modal-overlay">
         <div class="modal-box">
-            <h3 class="modal-title" id="modalTitle"></h3>
-            <p id="modalMessage"></p>
+            <div class="modal-title" id="modalTitle"></div>
+            <div class="modal-message" id="modalMessage"></div>
             <div class="modal-actions">
-                <button class="btn btn-outline-secondary" onclick="closeModal()">Cancelar</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
                 <button class="btn btn-primary" id="modalConfirmBtn">Confirmar</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Obtener CSRF token
         function getCsrfToken() {
-            const tokenElement = document.querySelector('[name=csrfmiddlewaretoken]');
-            if (tokenElement) {
-                return tokenElement.value;
-            }
-            // Fallback: buscar en cookies
-            const cookies = document.cookie.split(';');
-            for (let cookie of cookies) {
-                const [name, value] = cookie.trim().split('=');
-                if (name === 'csrftoken') {
-                    return value;
-                }
-            }
-            return '';
+            return document.querySelector('[name=csrfmiddlewaretoken]').value;
         }
 
         {% if fase == 'lectura' %}
@@ -416,10 +552,15 @@
         startBtn.addEventListener('click', () => {
             startTime = Date.now();
             timerInterval = setInterval(updateTimer, 100);
-            startBtn.disabled = true;
+            startBtn.style.display = 'none';
+            finishBtn.style.display = 'inline-flex';
             finishBtn.disabled = false;
             readingArea.classList.add('visible');
-            startBtn.textContent = 'Leyendo...';
+            
+            // Scroll suave al inicio del texto
+            setTimeout(() => {
+                readingArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
         });
 
         function updateTimer() {
@@ -434,12 +575,10 @@
             const elapsed = Date.now() - startTime;
             
             if (elapsed < 30000) {
-                // Mostrar mensaje sin alert
                 showModal(
                     'Tiempo mínimo requerido', 
                     'Por favor, dedica al menos 30 segundos a leer el texto.',
                     () => {
-                        // Reanudar timer
                         startTime = Date.now() - elapsed;
                         timerInterval = setInterval(updateTimer, 100);
                     }
@@ -486,12 +625,22 @@
         }
 
         {% elif fase == 'preguntas' %}
-        // FASE PREGUNTAS - TODAS VISIBLES CON SCROLL
+        // FASE PREGUNTAS
         const form = document.getElementById('questionsForm');
         const submitBtn = document.getElementById('submitAnswersBtn');
         const options = document.querySelectorAll('.option-item');
         const totalQ = {{ preguntas|length }};
         let answered = new Set();
+
+        // Scroll a la primera pregunta al cargar
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const firstQuestion = document.getElementById('question-1');
+                if (firstQuestion) {
+                    window.scrollTo({ top: 0, behavior: 'instant' });
+                }
+            }, 50);
+        });
 
         // Gestión de selección de opciones
         options.forEach(opt => {
@@ -499,14 +648,10 @@
                 const qid = opt.dataset.question;
                 const oid = opt.dataset.option;
                 
-                // Desmarcar todas las opciones de esta pregunta
                 document.querySelectorAll(`[data-question="${qid}"]`).forEach(o => o.classList.remove('selected'));
-                
-                // Marcar la opción seleccionada
                 opt.classList.add('selected');
                 document.getElementById(`opt_${qid}_${oid}`).checked = true;
                 
-                // Registrar respuesta
                 answered.add(qid);
                 updateProgress();
             });
@@ -517,10 +662,8 @@
             document.getElementById('currentQ').textContent = answeredCount;
             document.getElementById('progressBar').style.width = `${(answeredCount/totalQ)*100}%`;
             
-            // Habilitar botón solo cuando todas están respondidas
             submitBtn.disabled = answeredCount < totalQ;
             
-            // Actualizar texto del botón
             if (answeredCount === totalQ) {
                 submitBtn.innerHTML = '<i class="bi bi-send"></i> Enviar Respuestas';
             } else {
@@ -530,11 +673,10 @@
 
         submitBtn.addEventListener('click', () => {
             if (answered.size < totalQ) {
-                // Mostrar mensaje sin alert
                 showModal(
                     'Preguntas sin responder', 
                     `Has respondido ${answered.size} de ${totalQ} preguntas. Por favor, responde todas antes de enviar.`,
-                    () => {} // Solo cerrar el modal
+                    () => {}
                 );
                 return;
             }
@@ -621,14 +763,12 @@
             );
         }
 
-        // Cerrar modal con tecla ESC
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 closeModal();
             }
         });
 
-        // Cerrar modal al hacer click fuera
         document.getElementById('confirmModal').addEventListener('click', (e) => {
             if (e.target.id === 'confirmModal') {
                 closeModal();

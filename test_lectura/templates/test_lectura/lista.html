@@ -93,12 +93,18 @@
 
                 <div class="test-actions">
                     {% if test_data.ya_completado %}
-                        <a href="{% url 'test_lectura:resultado' test_data.mejor_resultado.sesion_id %}" class="btn btn-outline-primary btn-test">
-                            <i class="bi bi-clipboard-data"></i> Ver Resultados
+                        <a href="{% url 'test_lectura:iniciar' test_data.test.id %}" class="btn btn-primary btn-test btn-realizar">
+                            <i class="bi bi-play-circle-fill"></i> 
+                            <span>Realizar Test</span>
+                        </a>
+                        <a href="{% url 'test_lectura:resultado' test_data.mejor_resultado.sesion_id %}" class="btn btn-outline-primary btn-test btn-ver-resultado">
+                            <i class="bi bi-clipboard-data"></i>
+                            <span>Resultado</span>
                         </a>
                     {% elif test_data.puede_acceder %}
-                        <a href="{% url 'test_lectura:iniciar' test_data.test.id %}" class="btn btn-primary btn-test">
-                            <i class="bi bi-play"></i> Comenzar Test
+                        <a href="{% url 'test_lectura:iniciar' test_data.test.id %}" class="btn btn-primary btn-test btn-realizar">
+                            <i class="bi bi-play-circle-fill"></i> 
+                            <span>Realizar Test</span>
                         </a>
                     {% else %}
                         <button class="btn btn-secondary btn-test" disabled>
@@ -236,42 +242,48 @@
         display: flex;
         gap: var(--space-sm);
         margin-bottom: var(--space-xl);
+        border-bottom: 2px solid var(--border);
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
     }
 
     .tab-btn {
+        background: none;
+        border: none;
         padding: var(--space-md) var(--space-lg);
-        background: var(--bg-card);
-        border: 2px solid var(--border);
-        border-radius: var(--radius-md);
         cursor: pointer;
+        color: var(--text-muted);
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+        border-bottom: 2px solid transparent;
+        margin-bottom: -2px;
         transition: var(--transition);
         white-space: nowrap;
-        font-weight: 500;
+    }
+
+    .tab-btn:hover {
+        color: var(--primary);
     }
 
     .tab-btn.active {
-        background: var(--primary);
-        color: white;
-        border-color: var(--primary);
+        color: var(--primary);
+        border-bottom-color: var(--primary);
     }
 
-    .tab-btn:hover:not(.active) {
-        border-color: var(--primary);
-    }
-
-    /* Test cards */
+    /* Grid de tests */
     .tests-grid {
         display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
         gap: var(--space-lg);
     }
 
     .test-card {
         background: var(--bg-card);
         border-radius: var(--radius-lg);
-        overflow: hidden;
         box-shadow: var(--shadow-sm);
+        overflow: hidden;
         transition: var(--transition);
     }
 
@@ -281,6 +293,7 @@
     }
 
     .test-card-header {
+        background: linear-gradient(135deg, rgba(74, 124, 89, 0.1) 0%, rgba(74, 124, 89, 0.05) 100%);
         padding: var(--space-lg);
         border-bottom: 1px solid var(--border);
     }
@@ -297,6 +310,7 @@
         font-size: 1.25rem;
         font-weight: 700;
         color: var(--text);
+        line-height: 1.3;
     }
 
     .test-badge {
@@ -305,6 +319,7 @@
         font-size: 0.75rem;
         font-weight: 600;
         white-space: nowrap;
+        flex-shrink: 0;
     }
 
     .test-badge.inicial { background: var(--info); color: white; }
@@ -340,6 +355,7 @@
 
     .info-item i {
         color: var(--primary);
+        font-size: 1rem;
     }
 
     /* Resultados del usuario */
@@ -354,6 +370,8 @@
         font-size: 0.75rem;
         color: var(--text-muted);
         margin-bottom: var(--space-sm);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
 
     .results-grid {
@@ -383,7 +401,69 @@
 
     .btn-test {
         flex: 1;
-        min-height: 48px;
+        min-height: 52px;
+        font-size: 1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-sm);
+        border-radius: var(--radius-md);
+        transition: all 0.2s ease;
+    }
+
+    .btn-realizar {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        box-shadow: 0 4px 12px rgba(74, 124, 89, 0.3);
+        position: relative;
+        overflow: hidden;
+        color: #ffffff;
+    }
+
+    .btn-realizar::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .btn-realizar:hover::before {
+        width: 300px;
+        height: 300px;
+    }
+
+    .btn-realizar:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(74, 124, 89, 0.4);
+    }
+
+    .btn-realizar i {
+        font-size: 1.5rem;
+    }
+
+    .btn-realizar span {
+        position: relative;
+        z-index: 1;
+    }
+
+    .btn-ver-resultado {
+        max-width: 140px;
+    }
+
+    @media (max-width: 768px) {
+        .btn-ver-resultado {
+            max-width: none;
+        }
+        
+        .btn-ver-resultado span {
+            display: none;
+        }
     }
 
     /* Info Campayo */
@@ -482,9 +562,13 @@
     }
 
     /* Responsive */
-    @media (max-width: 640px) {
+    @media (max-width: 768px) {
         .tests-header {
             padding: var(--space-lg) var(--space-md);
+        }
+
+        .tests-grid {
+            grid-template-columns: 1fr;
         }
 
         .test-title {

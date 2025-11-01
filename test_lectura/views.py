@@ -1,4 +1,4 @@
-# test_lectura/views.py
+# test_lectura/views.py - CON DEBUGGING MEJORADO
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponseForbidden
@@ -9,24 +9,38 @@ from django.db import transaction, models
 import json
 from django.urls import reverse
 from datetime import timedelta
+import logging
 
 from .models import TestLectura, PreguntaTest, OpcionRespuesta, SesionTest, RespuestaUsuario
 from usuarios.models import Usuario, ProgresoTests
+
+logger = logging.getLogger(__name__)
 
 
 @login_required
 def lista_tests_view(request):
     """
     Vista principal para mostrar todos los tests disponibles.
+    CON DEBUGGING MEJORADO para identificar problemas de acceso.
     """
     usuario = request.user
+    
+    # DEBUG: Log información del usuario
+    logger.info(f"LISTA_TESTS: Usuario {usuario.email} accediendo a lista de tests")
+    logger.info(f"LISTA_TESTS: Es gestor: {usuario.es_gestor()}, Plan: {usuario.plan}")
     
     # Obtener tests accesibles para el usuario
     tests_disponibles = []
     tests = TestLectura.objects.filter(activo=True).order_by('numero_test')
     
     for test in tests:
+        # DEBUG: Log detallado de cada test
+        logger.info(f"LISTA_TESTS: Verificando acceso a test {test.nombre}")
+        
         puede_acceder, mensaje_error = test.puede_acceder(usuario)
+        
+        # DEBUG: Log resultado de verificación
+        logger.info(f"LISTA_TESTS: Test {test.nombre} - puede_acceder: {puede_acceder}, mensaje: '{mensaje_error}'")
         
         # Verificar si ya lo ha completado
         ya_completado = SesionTest.objects.filter(
@@ -34,6 +48,8 @@ def lista_tests_view(request):
             test=test,
             completado=True
         ).exists()
+        
+        logger.info(f"LISTA_TESTS: Test {test.nombre} - ya_completado: {ya_completado}")
         
         # Obtener mejor resultado si existe
         mejor_resultado = None
@@ -53,13 +69,30 @@ def lista_tests_view(request):
                     'sesion_id': mejor_sesion.id
                 }
         
+        # Lógica final de acceso
+        acceso_final = puede_acceder and not ya_completado
+        mensaje_final = mensaje_error if not puede_acceder else ('Ya completado' if ya_completado else '')
+        
+        logger.info(f"LISTA_TESTS: Test {test.nombre} - acceso_final: {acceso_final}, mensaje_final: '{mensaje_final}'")
+        
         tests_disponibles.append({
             'test': test,
-            'puede_acceder': puede_acceder and not ya_completado,  # No puede repetir
-            'mensaje_error': mensaje_error if not puede_acceder else ('Ya completado' if ya_completado else ''),
+            'puede_acceder': acceso_final,
+            'mensaje_error': mensaje_final,
             'ya_completado': ya_completado,
             'mejor_resultado': mejor_resultado
         })
+    
+    # DEBUG: Verificar estado de ProgresoTests del usuario
+    progresos = ProgresoTests.objects.filter(usuario=usuario, completado=True)
+    logger.info(f"LISTA_TESTS: Tests completados por {usuario.email}:")
+    for progreso in progresos:
+        logger.info(f"  - {progreso.test_nombre} completado el {progreso.fecha_realizacion}")
+    
+    # DEBUG: Verificar bloques completados
+    for bloque in [1, 2, 3]:
+        completado = usuario.bloque_completado(bloque)
+        logger.info(f"LISTA_TESTS: Bloque {bloque} completado: {completado}")
     
     # Estadísticas globales
     sesiones_completadas = SesionTest.objects.filter(
@@ -120,6 +153,8 @@ def iniciar_test_view(request, test_id):
     test = get_object_or_404(TestLectura, id=test_id, activo=True)
     usuario = request.user
     
+    logger.info(f"INICIAR_TEST: Usuario {usuario.email} intentando iniciar test {test.nombre}")
+    
     # Verificar si ya completó el test
     ya_completado = SesionTest.objects.filter(
         usuario=usuario,
@@ -128,12 +163,16 @@ def iniciar_test_view(request, test_id):
     ).exists()
     
     if ya_completado:
+        logger.warning(f"INICIAR_TEST: Usuario {usuario.email} ya completó {test.nombre}")
         messages.warning(request, 'Ya has completado este test. Solo puedes hacerlo una vez.')
         return redirect('test_lectura:lista_tests')
     
     # Verificar acceso
     puede_acceder, mensaje_error = test.puede_acceder(usuario)
+    logger.info(f"INICIAR_TEST: Verificación de acceso - puede_acceder: {puede_acceder}, mensaje: '{mensaje_error}'")
+    
     if not puede_acceder:
+        logger.warning(f"INICIAR_TEST: Acceso denegado para {usuario.email} a {test.nombre}: {mensaje_error}")
         messages.error(request, mensaje_error)
         return redirect('test_lectura:lista_tests')
     
@@ -162,6 +201,9 @@ def iniciar_test_view(request, test_id):
             test=test,
             fecha_inicio=timezone.now()
         )
+        logger.info(f"INICIAR_TEST: Nueva sesión creada para {usuario.email} - {test.nombre}")
+    else:
+        logger.info(f"INICIAR_TEST: Reanudando sesión existente para {usuario.email} - {test.nombre}")
     
     # Determinar fase
     if sesion.tiempo_lectura:
@@ -201,6 +243,8 @@ def finalizar_lectura_view(request):
         sesion.tiempo_lectura = tiempo_lectura
         sesion.save()
         
+        logger.info(f"FINALIZAR_LECTURA: Tiempo de lectura guardado para sesión {sesion_id}: {tiempo_lectura}")
+        
         # Obtener preguntas del test
         preguntas = list(PreguntaTest.objects.filter(test=sesion.test).prefetch_related('opciones'))
         
@@ -227,8 +271,10 @@ def finalizar_lectura_view(request):
         })
         
     except SesionTest.DoesNotExist:
+        logger.error(f"FINALIZAR_LECTURA: Sesión {sesion_id} no encontrada")
         return JsonResponse({'error': 'Sesión no encontrada'}, status=404)
     except Exception as e:
+        logger.error(f"FINALIZAR_LECTURA: Error en sesión {sesion_id}: {e}")
         return JsonResponse({'error': str(e)}, status=500)
 
 
@@ -245,6 +291,8 @@ def finalizar_test_view(request):
         with transaction.atomic():
             sesion = SesionTest.objects.get(id=sesion_id, usuario=request.user)
             respuestas = json.loads(respuestas_json)
+            
+            logger.info(f"FINALIZAR_TEST: Procesando respuestas para sesión {sesion_id}")
             
             # Guardar respuestas
             respuestas_correctas = 0
@@ -276,14 +324,21 @@ def finalizar_test_view(request):
             # Finalizar sesión (esto actualiza automáticamente ProgresoTests)
             sesion.finalizar_sesion()
             
+            logger.info(f"FINALIZAR_TEST: Test {sesion.test.nombre} completado por {request.user.email}")
+            logger.info(f"  - Velocidad lectura: {sesion.velocidad_lectura} ppm")
+            logger.info(f"  - Velocidad memorización: {sesion.velocidad_memorizacion} ppm")
+            logger.info(f"  - Respuestas correctas: {respuestas_correctas}/{total_preguntas}")
+            
             return JsonResponse({
                 'success': True,
-                'redirect_url': reverse('test_lectura:resultado', kwargs={'sesion_id': sesion.id})  # ✅ Uso de reverse
+                'redirect_url': reverse('test_lectura:resultado', kwargs={'sesion_id': sesion.id})
             })
             
     except SesionTest.DoesNotExist:
+        logger.error(f"FINALIZAR_TEST: Sesión {sesion_id} no encontrada")
         return JsonResponse({'error': 'Sesión no encontrada'}, status=404)
     except Exception as e:
+        logger.error(f"FINALIZAR_TEST: Error en sesión {sesion_id}: {e}")
         return JsonResponse({'error': str(e)}, status=500)
 
 
@@ -298,6 +353,8 @@ def resultado_test_view(request, sesion_id):
         usuario=request.user, 
         completado=True
     )
+    
+    logger.info(f"RESULTADO_TEST: Mostrando resultados de sesión {sesion_id} para {request.user.email}")
     
     # Obtener respuestas del usuario
     respuestas = RespuestaUsuario.objects.filter(sesion=sesion).select_related(
