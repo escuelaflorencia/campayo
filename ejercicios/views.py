@@ -26,7 +26,7 @@ def lista_ejercicios_view(request):
     # Verificar si ha completado el test inicial
     test_inicial_completado = ProgresoTests.objects.filter(
         usuario=usuario,
-        test_nombre='inicial',
+        test_nombre='test_inicial',
         completado=True
     ).exists()
     
