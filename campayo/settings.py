@@ -29,7 +29,7 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 # Configuración de hosts permitidos
 ALLOWED_HOSTS = config(
     'ALLOWED_HOSTS', 
-    default='localhost,127.0.0.1',
+    default='localhost,127.0.0.1,campayo.onrender.com',
     cast=lambda v: [s.strip() for s in v.split(',')]
 )
 
