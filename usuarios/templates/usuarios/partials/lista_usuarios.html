@@ -1,0 +1,310 @@
+{% load static %}
+
+{% if usuarios %}
+<div class="users-list">
+    {% for usuario in usuarios %}
+    <div class="user-card" data-user-id="{{ usuario.id }}">
+        <div class="user-profile">
+            <div class="user-avatar">
+                <i class="bi bi-person"></i>
+            </div>
+            <div class="user-details">
+                <div class="user-name">{{ usuario.nombre_completo }}</div>
+                <div class="user-email">{{ usuario.email }}</div>
+                <div class="user-date">
+                    <i class="bi bi-calendar"></i>
+                    Registro: {{ usuario.fecha_registro|date:"d/m/Y" }}
+                </div>
+            </div>
+        </div>
+        
+        <div class="user-plan">
+            <div class="plan-badge {% if usuario.es_pro %}pro{% else %}free{% endif %}">
+                <i class="bi bi-{% if usuario.es_pro %}star{% else %}person{% endif %}"></i>
+                {% if usuario.es_pro %}Pro{% else %}Gratuito{% endif %}
+            </div>
+            <button 
+                type="button"
+                class="plan-toggle {% if usuario.es_pro %}downgrade{% else %}upgrade{% endif %}"
+                onclick="cambiarPlanUsuario({{ usuario.id }}, '{{ usuario.plan }}')"
+                title="{% if usuario.es_pro %}Cambiar a plan gratuito{% else %}Cambiar a plan Pro{% endif %}"
+                data-user-id="{{ usuario.id }}"
+                data-plan="{{ usuario.plan }}">
+                {% if usuario.es_pro %}
+                    <i class="bi bi-arrow-down"></i>
+                    Quitar Pro
+                {% else %}
+                    <i class="bi bi-arrow-up"></i>
+                    Hacer Pro
+                {% endif %}
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if usuarios|length >= 20 %}
+<div class="search-limit-notice">
+    <i class="bi bi-info-circle"></i>
+    <span>Mostrando los primeros 20 resultados. Refina tu búsqueda para ver más.</span>
+</div>
+{% endif %}
+
+{% else %}
+<div class="empty-state">
+    <i class="bi bi-search"></i>
+    <h3>No se encontraron usuarios</h3>
+    {% if busqueda %}
+    <p>Intenta con otro término de búsqueda</p>
+    {% else %}
+    <p>No hay usuarios registrados aún</p>
+    {% endif %}
+</div>
+{% endif %}
+
+<style>
+/* Users List */
+.users-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.user-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    transition: var(--transition);
+}
+
+.user-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+/* User Profile */
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    flex: 1;
+    min-width: 0;
+}
+
+.user-avatar {
+    width: 48px;
+    height: 48px;
+    background: var(--primary);
+    color: white;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.user-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-name {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-email {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin-bottom: var(--space-xs);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-date {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* User Plan */
+.user-plan {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-sm);
+    flex-shrink: 0;
+}
+
+.plan-badge {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-full);
+    font-size: 0.875rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.plan-badge.pro {
+    background: var(--success);
+    color: white;
+}
+
+.plan-badge.free {
+    background: var(--text-muted);
+    color: white;
+}
+
+.plan-toggle {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    border: 1px solid;
+    border-radius: var(--radius-md);
+    background: none;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: var(--transition);
+    min-height: 36px;
+    white-space: nowrap;
+}
+
+.plan-toggle.upgrade {
+    border-color: var(--success);
+    color: var(--success);
+}
+
+.plan-toggle.upgrade:hover {
+    background: var(--success);
+    color: white;
+}
+
+.plan-toggle.downgrade {
+    border-color: var(--text-muted);
+    color: var(--text-muted);
+}
+
+.plan-toggle.downgrade:hover {
+    background: var(--text-muted);
+    color: white;
+}
+
+.plan-toggle:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(74, 124, 89, 0.2);
+}
+
+.plan-toggle:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Search Limit Notice */
+.search-limit-notice {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+    margin-top: var(--space-lg);
+    background: rgba(107, 155, 209, 0.1);
+    border: 1px solid var(--info);
+    border-radius: var(--radius-md);
+    color: #0c5460;
+    font-size: 0.875rem;
+    text-align: center;
+}
+
+.search-limit-notice i {
+    color: var(--info);
+    font-size: 1rem;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: var(--space-2xl);
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: var(--text-muted);
+    opacity: 0.5;
+    margin-bottom: var(--space-lg);
+}
+
+.empty-state h3 {
+    margin-bottom: var(--space-sm);
+    color: var(--text-muted);
+}
+
+.empty-state p {
+    color: var(--text-muted);
+    margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .user-card {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--space-lg);
+    }
+    
+    .user-profile {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--space-md);
+    }
+    
+    .user-plan {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .plan-toggle {
+        flex: 1;
+        justify-content: center;
+        max-width: 140px;
+    }
+}
+
+@media (max-width: 480px) {
+    .user-card {
+        padding: var(--space-md);
+    }
+    
+    .user-avatar {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+    
+    .plan-toggle {
+        font-size: 0.8rem;
+        padding: var(--space-sm);
+    }
+}
+</style>

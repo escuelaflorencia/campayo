@@ -1,0 +1,639 @@
+<!-- test_lectura/templates/test_lectura/realizar_test.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4A7C59">
+    <title>{{ test.titulo }} - Campayo</title>
+    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    
+    <style>
+        body { margin: 0; padding: 0; }
+
+        /* Header simplificado */
+        .test-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: var(--space-md);
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .btn-back-test {
+            background: none;
+            border: none;
+            padding: var(--space-sm);
+            cursor: pointer;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            min-width: 40px;
+            min-height: 40px;
+        }
+
+        .test-title-header {
+            flex: 1;
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        /* Container principal */
+        .test-container-full {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: var(--space-lg);
+        }
+
+        /* FASE LECTURA */
+        .timer-card {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-2xl);
+            text-align: center;
+            margin-bottom: var(--space-xl);
+        }
+
+        .timer-display-big {
+            font-family: 'Courier New', monospace;
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: var(--space-md);
+        }
+
+        .timer-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+        }
+
+        .reading-text-area {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-2xl);
+            line-height: 1.8;
+            font-size: 1.125rem;
+            margin-bottom: var(--space-xl);
+            display: none;
+        }
+
+        .reading-text-area.visible {
+            display: block;
+        }
+
+        .reading-title {
+            font-size: 1.5rem;
+            margin-bottom: var(--space-lg);
+            color: var(--text);
+        }
+
+        /* FASE PREGUNTAS */
+        .questions-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border-radius: var(--radius-lg);
+            padding: var(--space-xl);
+            margin-bottom: var(--space-xl);
+            position: sticky;
+            top: 73px;
+            z-index: 50;
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-md);
+        }
+
+        .questions-counter {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .progress-bar-full {
+            height: 8px;
+            background: rgba(255,255,255,0.3);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: white;
+            transition: width 0.3s ease;
+        }
+
+        .question-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-xl);
+            margin-bottom: var(--space-lg);
+            box-shadow: var(--shadow-sm);
+            scroll-margin-top: 180px;
+        }
+
+        .question-number-badge {
+            background: var(--primary);
+            color: white;
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius-full);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            margin-bottom: var(--space-md);
+        }
+
+        .question-text {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: var(--space-lg);
+            line-height: 1.6;
+        }
+
+        .option-item {
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            margin-bottom: var(--space-sm);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .option-item:hover {
+            border-color: var(--primary);
+        }
+
+        .option-item.selected {
+            background: rgba(74, 124, 89, 0.1);
+            border-color: var(--primary);
+        }
+
+        .option-item input[type="radio"] {
+            display: none;
+        }
+
+        .option-label {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            cursor: pointer;
+        }
+
+        .option-check {
+            width: 24px;
+            height: 24px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-full);
+            flex-shrink: 0;
+            transition: var(--transition);
+        }
+
+        .option-item.selected .option-check {
+            background: var(--primary);
+            border-color: var(--primary);
+            position: relative;
+        }
+
+        .option-item.selected .option-check::after {
+            content: '✓';
+            color: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 14px;
+        }
+
+        /* Botón de envío sticky al final */
+        .submit-section {
+            position: sticky;
+            bottom: 0;
+            background: linear-gradient(to top, var(--bg) 0%, var(--bg) 70%, rgba(255,255,255,0) 100%);
+            padding: var(--space-xl) 0;
+            margin-top: var(--space-xl);
+            text-align: center;
+            z-index: 40;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-lg);
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal-box {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-2xl);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: var(--space-md);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: var(--space-md);
+            margin-top: var(--space-lg);
+        }
+
+        .modal-actions button {
+            flex: 1;
+        }
+
+        /* Indicador de progreso para móvil */
+        @media (max-width: 768px) {
+            .questions-counter {
+                font-size: 1.5rem;
+            }
+
+            .question-card {
+                padding: var(--space-lg);
+            }
+
+            .submit-section {
+                padding: var(--space-lg) 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    {% csrf_token %}
+    <!-- Header fijo -->
+    <header class="test-header">
+        <button class="btn-back-test" onclick="confirmarSalir()">
+            <i class="bi bi-arrow-left" style="font-size: 1.5rem;"></i>
+        </button>
+        <div class="test-title-header">{{ test.titulo }}</div>
+    </header>
+
+    <div class="test-container-full">
+        {% if fase == 'lectura' %}
+        <!-- FASE LECTURA -->
+        <div class="timer-card">
+            <div class="timer-display-big" id="timerDisplay">00:00</div>
+            <div class="timer-label">Tiempo de lectura</div>
+            <button id="startReadingBtn" class="btn btn-lg" style="margin-top: 24px; background: white; color: var(--primary);">
+                <i class="bi bi-play-fill"></i> Comenzar a Leer
+            </button>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h3><i class="bi bi-info-circle"></i> Instrucciones</h3>
+                <ol style="line-height: 1.8;">
+                    <li>Pulse "Comenzar a Leer" cuando esté listo</li>
+                    <li>Lea el texto con tranquilidad y a su ritmo natural</li>
+                    <li>Al terminar, pulse "He terminado de leer"</li>
+                    <li>Después responderá 20 preguntas sobre el texto</li>
+                </ol>
+            </div>
+        </div>
+
+        <div class="reading-text-area" id="readingArea">
+            <h2 class="reading-title">{{ test.texto_titulo }}</h2>
+            <div>{{ test.texto_contenido|linebreaks }}</div>
+        </div>
+
+        <div style="text-align: center; margin-top: 32px;">
+            <button id="finishReadingBtn" class="btn btn-primary btn-lg" disabled>
+                <i class="bi bi-check-circle"></i> He terminado de leer
+            </button>
+        </div>
+
+        {% elif fase == 'preguntas' %}
+        <!-- FASE DE PREGUNTAS - TODAS VISIBLES CON SCROLL -->
+        <div class="questions-header">
+            <div class="progress-info">
+                <h2 style="color: white; margin: 0;">Preguntas</h2>
+                <div class="questions-counter">
+                    <span id="currentQ">0</span>/<span id="totalQ">{{ preguntas|length }}</span>
+                </div>
+            </div>
+            <div class="progress-bar-full">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+        </div>
+
+        <form id="questionsForm" method="post">
+            {% csrf_token %}
+            
+            <!-- Todas las preguntas visibles -->
+            {% for pregunta in preguntas %}
+            <div class="question-card" id="question-{{ forloop.counter }}">
+                <div class="question-number-badge">{{ forloop.counter }}</div>
+                <div class="question-text">{{ pregunta.pregunta }}</div>
+                
+                {% for opcion in pregunta.opciones.all %}
+                <div class="option-item" data-question="{{ pregunta.id }}" data-option="{{ opcion.id }}">
+                    <input type="radio" name="pregunta_{{ pregunta.id }}" value="{{ opcion.id }}" id="opt_{{ pregunta.id }}_{{ opcion.id }}">
+                    <label class="option-label" for="opt_{{ pregunta.id }}_{{ opcion.id }}">
+                        <div class="option-check"></div>
+                        <div>{{ opcion.texto }}</div>
+                    </label>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+
+            <!-- Sección de envío sticky -->
+            <div class="submit-section">
+                <button type="button" id="submitAnswersBtn" class="btn btn-primary btn-lg" disabled>
+                    <i class="bi bi-send"></i> Enviar Respuestas
+                </button>
+                <p style="margin-top: var(--space-sm); font-size: 0.875rem; color: var(--text-light);">
+                    Responde todas las preguntas para continuar
+                </p>
+            </div>
+        </form>
+        {% endif %}
+    </div>
+
+    <!-- Modal confirmación -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-box">
+            <h3 class="modal-title" id="modalTitle"></h3>
+            <p id="modalMessage"></p>
+            <div class="modal-actions">
+                <button class="btn btn-outline-secondary" onclick="closeModal()">Cancelar</button>
+                <button class="btn btn-primary" id="modalConfirmBtn">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Obtener CSRF token
+        function getCsrfToken() {
+            const tokenElement = document.querySelector('[name=csrfmiddlewaretoken]');
+            if (tokenElement) {
+                return tokenElement.value;
+            }
+            // Fallback: buscar en cookies
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                const [name, value] = cookie.trim().split('=');
+                if (name === 'csrftoken') {
+                    return value;
+                }
+            }
+            return '';
+        }
+
+        {% if fase == 'lectura' %}
+        // FASE LECTURA
+        let startTime, timerInterval;
+        const timerDisplay = document.getElementById('timerDisplay');
+        const startBtn = document.getElementById('startReadingBtn');
+        const finishBtn = document.getElementById('finishReadingBtn');
+        const readingArea = document.getElementById('readingArea');
+
+        startBtn.addEventListener('click', () => {
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 100);
+            startBtn.disabled = true;
+            finishBtn.disabled = false;
+            readingArea.classList.add('visible');
+            startBtn.textContent = 'Leyendo...';
+        });
+
+        function updateTimer() {
+            const elapsed = Date.now() - startTime;
+            const mins = Math.floor(elapsed / 60000);
+            const secs = Math.floor((elapsed % 60000) / 1000);
+            timerDisplay.textContent = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+        }
+
+        finishBtn.addEventListener('click', () => {
+            clearInterval(timerInterval);
+            const elapsed = Date.now() - startTime;
+            
+            if (elapsed < 30000) {
+                // Mostrar mensaje sin alert
+                showModal(
+                    'Tiempo mínimo requerido', 
+                    'Por favor, dedica al menos 30 segundos a leer el texto.',
+                    () => {
+                        // Reanudar timer
+                        startTime = Date.now() - elapsed;
+                        timerInterval = setInterval(updateTimer, 100);
+                    }
+                );
+                return;
+            }
+
+            showModal('¿Terminar lectura?', `Tiempo: ${timerDisplay.textContent}`, () => {
+                finalizarLectura(elapsed);
+            });
+        });
+
+        function finalizarLectura(tiempo) {
+            const formData = new FormData();
+            formData.append('sesion_id', '{{ sesion.id }}');
+            formData.append('tiempo_lectura_ms', tiempo);
+            formData.append('csrfmiddlewaretoken', getCsrfToken());
+
+            finishBtn.disabled = true;
+            finishBtn.innerHTML = '<i class="bi bi-hourglass"></i> Guardando...';
+
+            fetch('{% url "test_lectura:finalizar_lectura" %}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    showModal('Error', 'Hubo un problema al guardar tu tiempo de lectura. Por favor, intenta de nuevo.', () => {
+                        finishBtn.disabled = false;
+                        finishBtn.innerHTML = '<i class="bi bi-check-circle"></i> He terminado de leer';
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showModal('Error de conexión', 'Verifica tu conexión a internet e intenta de nuevo.', () => {
+                    finishBtn.disabled = false;
+                    finishBtn.innerHTML = '<i class="bi bi-check-circle"></i> He terminado de leer';
+                });
+            });
+        }
+
+        {% elif fase == 'preguntas' %}
+        // FASE PREGUNTAS - TODAS VISIBLES CON SCROLL
+        const form = document.getElementById('questionsForm');
+        const submitBtn = document.getElementById('submitAnswersBtn');
+        const options = document.querySelectorAll('.option-item');
+        const totalQ = {{ preguntas|length }};
+        let answered = new Set();
+
+        // Gestión de selección de opciones
+        options.forEach(opt => {
+            opt.addEventListener('click', () => {
+                const qid = opt.dataset.question;
+                const oid = opt.dataset.option;
+                
+                // Desmarcar todas las opciones de esta pregunta
+                document.querySelectorAll(`[data-question="${qid}"]`).forEach(o => o.classList.remove('selected'));
+                
+                // Marcar la opción seleccionada
+                opt.classList.add('selected');
+                document.getElementById(`opt_${qid}_${oid}`).checked = true;
+                
+                // Registrar respuesta
+                answered.add(qid);
+                updateProgress();
+            });
+        });
+
+        function updateProgress() {
+            const answeredCount = answered.size;
+            document.getElementById('currentQ').textContent = answeredCount;
+            document.getElementById('progressBar').style.width = `${(answeredCount/totalQ)*100}%`;
+            
+            // Habilitar botón solo cuando todas están respondidas
+            submitBtn.disabled = answeredCount < totalQ;
+            
+            // Actualizar texto del botón
+            if (answeredCount === totalQ) {
+                submitBtn.innerHTML = '<i class="bi bi-send"></i> Enviar Respuestas';
+            } else {
+                submitBtn.innerHTML = `<i class="bi bi-send"></i> Enviar Respuestas (${answeredCount}/${totalQ})`;
+            }
+        }
+
+        submitBtn.addEventListener('click', () => {
+            if (answered.size < totalQ) {
+                // Mostrar mensaje sin alert
+                showModal(
+                    'Preguntas sin responder', 
+                    `Has respondido ${answered.size} de ${totalQ} preguntas. Por favor, responde todas antes de enviar.`,
+                    () => {} // Solo cerrar el modal
+                );
+                return;
+            }
+            
+            showModal(
+                '¿Enviar respuestas?', 
+                `Has respondido todas las ${totalQ} preguntas. Una vez enviadas no podrás modificarlas.`, 
+                () => {
+                    enviarRespuestas();
+                }
+            );
+        });
+
+        function enviarRespuestas() {
+            const respuestas = {};
+            document.querySelectorAll('[name^="pregunta_"]:checked').forEach(input => {
+                const qid = input.name.replace('pregunta_', '');
+                respuestas[qid] = input.value;
+            });
+
+            const formData = new FormData();
+            formData.append('sesion_id', '{{ sesion.id }}');
+            formData.append('respuestas', JSON.stringify(respuestas));
+            formData.append('csrfmiddlewaretoken', getCsrfToken());
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="bi bi-hourglass"></i> Enviando...';
+
+            fetch('{% url "test_lectura:finalizar_test" %}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success && data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                } else {
+                    showModal(
+                        'Error', 
+                        'Hubo un problema al enviar las respuestas. Por favor, intenta de nuevo.',
+                        () => {
+                            submitBtn.disabled = false;
+                            updateProgress();
+                        }
+                    );
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showModal(
+                    'Error de conexión', 
+                    'Verifica tu conexión a internet e intenta de nuevo.',
+                    () => {
+                        submitBtn.disabled = false;
+                        updateProgress();
+                    }
+                );
+            });
+        }
+        {% endif %}
+
+        // Modal helper
+        function showModal(title, message, onConfirm) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = message;
+            document.getElementById('modalConfirmBtn').onclick = () => {
+                closeModal();
+                onConfirm();
+            };
+            document.getElementById('confirmModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('confirmModal').classList.remove('active');
+        }
+
+        function confirmarSalir() {
+            showModal(
+                '¿Salir del test?',
+                'Si sales ahora, perderás todo tu progreso en este test.',
+                () => {
+                    window.location.href = '{% url "test_lectura:lista_tests" %}';
+                }
+            );
+        }
+
+        // Cerrar modal con tecla ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        // Cerrar modal al hacer click fuera
+        document.getElementById('confirmModal').addEventListener('click', (e) => {
+            if (e.target.id === 'confirmModal') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+<div class="user-card" data-user-id="{{ usuario.id }}">
+    <div class="user-profile">
+        <div class="user-avatar">
+            <i class="bi bi-person"></i>
+        </div>
+        <div class="user-details">
+            <div class="user-name">{{ usuario.nombre_completo }}</div>
+            <div class="user-email">{{ usuario.email }}</div>
+            <div class="user-date">
+                <i class="bi bi-calendar"></i>
+                Registro: {{ usuario.fecha_registro|date:"d/m/Y" }}
+            </div>
+        </div>
+    </div>
+    
+    <div class="user-plan">
+        <div class="plan-badge {% if usuario.es_pro %}pro{% else %}free{% endif %}">
+            <i class="bi bi-{% if usuario.es_pro %}star{% else %}person{% endif %}"></i>
+            {% if usuario.es_pro %}Pro{% else %}Gratuito{% endif %}
+        </div>
+        <button 
+            type="button"
+            class="plan-toggle {% if usuario.es_pro %}downgrade{% else %}upgrade{% endif %}"
+            onclick="cambiarPlanUsuario({{ usuario.id }}, '{{ usuario.plan }}')"
+            title="{% if usuario.es_pro %}Cambiar a plan gratuito{% else %}Cambiar a plan Pro{% endif %}"
+            data-user-id="{{ usuario.id }}"
+            data-plan="{{ usuario.plan }}">
+            {% if usuario.es_pro %}
+                <i class="bi bi-arrow-down"></i>
+                Quitar Pro
+            {% else %}
+                <i class="bi bi-arrow-up"></i>
+                Hacer Pro
+            {% endif %}
+        </button>
+    </div>
+</div>

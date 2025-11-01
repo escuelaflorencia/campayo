@@ -1,0 +1,455 @@
+{% extends 'base.html' %}
+{% load ejercicios_extras %}
+
+{% block title %}Mi Progreso - Ejercicios{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div class="page-header">
+    <h1>Mi Progreso</h1>
+    <p class="subtitle">Seguimiento de tu entrenamiento</p>
+</div>
+
+<!-- Navegación -->
+<div class="nav-pills mb-lg">
+    <a href="{% url 'ejercicios:lista' %}" class="nav-pill">
+        <i class="bi bi-arrow-left"></i>
+        <span>Volver a Ejercicios</span>
+    </a>
+</div>
+
+<!-- Resumen General -->
+<div class="stats-grid mb-lg">
+    <div class="stat-card primary">
+        <div class="stat-icon">
+            <i class="bi bi-check-circle"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-number">{{ total_ejercicios_realizados }}</div>
+            <div class="stat-label">Ejercicios Completados</div>
+        </div>
+    </div>
+    
+    {% for bloque, datos in progreso_bloques.items %}
+    <div class="stat-card {% if datos.completado %}success{% else %}secondary{% endif %}">
+        <div class="stat-icon">
+            <i class="bi {% if datos.completado %}bi-trophy{% else %}bi-collection{% endif %}"></i>
+        </div>
+        <div class="stat-content">
+            <div class="stat-number">{{ datos.realizados }}/{{ datos.total }}</div>
+            <div class="stat-label">Bloque {{ bloque }}</div>
+            <div class="progress-mini">
+                <div class="progress-mini-bar {% if datos.completado %}success{% else %}primary{% endif %}" 
+                     style="width: {{ datos.porcentaje }}%"></div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Progreso por Categoría -->
+<div class="card mb-lg">
+    <div class="card-header">
+        <h3>
+            <i class="bi bi-bar-chart"></i>
+            Progreso por Categoría
+        </h3>
+    </div>
+    <div class="card-body">
+        {% for codigo, datos in progreso_por_categoria.items %}
+        <div class="progress-item">
+            <div class="progress-info">
+                <div class="progress-title">{{ datos.categoria.nombre }}</div>
+                <div class="progress-meta">{{ datos.realizados }}/{{ datos.total }} ejercicios</div>
+            </div>
+            <div class="progress-stats">
+                <div class="progress-percentage">{{ datos.porcentaje }}%</div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: {{ datos.porcentaje }}%"></div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Ejercicios Recientes -->
+<div class="card">
+    <div class="card-header">
+        <h3>
+            <i class="bi bi-clock"></i>
+            Ejercicios Recientes
+        </h3>
+    </div>
+    <div class="card-body">
+        {% if ejercicios_realizados %}
+            <div class="exercise-list">
+                {% for ejercicio_realizado in ejercicios_realizados %}
+                <div class="exercise-item completed">
+                    <div class="exercise-icon">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <div class="exercise-content">
+                        <div class="exercise-title">{{ ejercicio_realizado.ejercicio_codigo }}</div>
+                        <div class="exercise-meta">
+                            {{ ejercicio_realizado.fecha_realizacion|date:"d/m/Y H:i" }}
+                        </div>
+                    </div>
+                    <div class="exercise-badge">
+                        <span class="badge success">
+                            <i class="bi bi-check"></i>
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="bi bi-info-circle"></i>
+                <h4>No has completado ejercicios aún</h4>
+                <p>Comienza tu entrenamiento para ver tu progreso aquí.</p>
+                <a href="{% url 'ejercicios:lista' %}" class="btn primary">
+                    <i class="bi bi-play"></i> Comenzar Entrenamiento
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Grilla de estadísticas */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+}
+
+@media (min-width: 640px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* Tarjetas de estadísticas */
+.stat-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    transition: var(--transition);
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.stat-card.primary {
+    border-color: var(--primary);
+    background: rgba(74, 124, 89, 0.05);
+}
+
+.stat-card.success {
+    border-color: var(--success);
+    background: rgba(74, 124, 89, 0.05);
+}
+
+.stat-card.secondary {
+    border-color: var(--text-muted);
+    background: rgba(107, 114, 128, 0.05);
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.stat-card.primary .stat-icon {
+    background: var(--primary);
+    color: white;
+}
+
+.stat-card.success .stat-icon {
+    background: var(--success);
+    color: white;
+}
+
+.stat-card.secondary .stat-icon {
+    background: var(--text-muted);
+    color: white;
+}
+
+.stat-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.2;
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-top: var(--space-xs);
+}
+
+/* Mini progress bar */
+.progress-mini {
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: var(--space-xs);
+    overflow: hidden;
+}
+
+.progress-mini-bar {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.progress-mini-bar.primary {
+    background: var(--primary);
+}
+
+.progress-mini-bar.success {
+    background: var(--success);
+}
+
+/* Items de progreso */
+.progress-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-lg) 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.progress-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.progress-item:first-child {
+    padding-top: 0;
+}
+
+.progress-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.progress-title {
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: var(--space-xs);
+    font-size: 1rem;
+}
+
+.progress-meta {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.progress-stats {
+    text-align: right;
+    min-width: 100px;
+}
+
+.progress-percentage {
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: var(--space-xs);
+    font-size: 1rem;
+}
+
+.progress-bar-container {
+    width: 80px;
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-left: auto;
+}
+
+.progress-bar {
+    height: 100%;
+    background: var(--primary);
+    transition: width 0.3s ease;
+    border-radius: 4px;
+}
+
+/* Lista de ejercicios */
+.exercise-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.exercise-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+    border-radius: var(--radius-md);
+    transition: var(--transition);
+    border-bottom: 1px solid var(--border);
+}
+
+.exercise-item:last-child {
+    border-bottom: none;
+}
+
+.exercise-item:hover {
+    background: rgba(74, 124, 89, 0.05);
+}
+
+.exercise-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 1.25rem;
+    background: rgba(74, 124, 89, 0.1);
+    color: var(--success);
+}
+
+.exercise-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.exercise-title {
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: var(--space-xs);
+    font-size: 1rem;
+}
+
+.exercise-meta {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.exercise-badge {
+    flex-shrink: 0;
+}
+
+/* Badge */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    gap: 4px;
+}
+
+.badge.success {
+    background: var(--success);
+    color: white;
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: var(--space-2xl);
+    color: var(--text-muted);
+}
+
+.empty-state i {
+    font-size: 3rem;
+    margin-bottom: var(--space-lg);
+    opacity: 0.5;
+}
+
+.empty-state h4 {
+    margin-bottom: var(--space-md);
+    color: var(--text);
+}
+
+.empty-state p {
+    margin-bottom: var(--space-lg);
+    max-width: 300px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .stat-card {
+        padding: var(--space-md);
+    }
+    
+    .stat-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+    }
+    
+    .stat-number {
+        font-size: 1.25rem;
+    }
+    
+    .progress-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-sm);
+        padding: var(--space-md) 0;
+    }
+    
+    .progress-stats {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: left;
+    }
+    
+    .progress-bar-container {
+        flex: 1;
+        margin-left: var(--space-md);
+        margin-right: 0;
+    }
+    
+    .exercise-item {
+        padding: var(--space-md);
+    }
+    
+    .exercise-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.125rem;
+    }
+}
+</style>
+{% endblock %}

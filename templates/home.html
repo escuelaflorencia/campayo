@@ -1,0 +1,719 @@
+{% extends 'base.html' %}
+
+{% block title %}TSR - Método de Lectura Rápida de Ramón Campayo{% endblock %}
+
+{% block content %}
+<div class="home-page">
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-icon">
+                <i class="bi bi-lightning-charge"></i>
+            </div>
+            <h1 class="hero-title">
+                Transforma tu Lectura<br>con el Método Campayo
+            </h1>
+            <p class="hero-subtitle">
+                Entrena tu mente con las técnicas del campeón mundial de memorización
+            </p>
+            <div class="hero-actions">
+                <a href="{% url 'usuarios:registro' %}" class="btn-primary">
+                    <i class="bi bi-rocket-takeoff"></i>
+                    Comenzar Gratis
+                </a>
+                <a href="{% url 'usuarios:login' %}" class="btn-secondary">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                    Iniciar Sesión
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Campayo Bio -->
+    <section class="campayo-section">
+        <div class="campayo-card">
+            <div class="campayo-header">
+                <i class="bi bi-award"></i>
+                <h2>Ramón Campayo</h2>
+            </div>
+            <p class="campayo-description">
+                Campeón del Mundo de Memorización Rápida y autor de bestsellers sobre lectura y memoria. 
+                Su método ha ayudado a millones de personas a triplicar su velocidad de lectura mientras 
+                mantienen una comprensión excepcional.
+            </p>
+            <div class="campayo-achievement">
+                <i class="bi bi-trophy"></i>
+                Récord Mundial Guinness en Memorización
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features-section">
+        <h2 class="section-title">¿Qué vas a conseguir?</h2>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="bi bi-speedometer2"></i>
+                </div>
+                <h3>Lectura Fotográfica</h3>
+                <p>Aprende a leer bloques completos de texto de un solo vistazo, multiplicando tu velocidad hasta 10 veces</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="bi bi-cpu"></i>
+                </div>
+                <h3>Memoria Eidética</h3>
+                <p>Desarrolla una memoria visual poderosa que te permitirá recordar todo lo que lees con claridad</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <i class="bi bi-graph-up-arrow"></i>
+                </div>
+                <h3>Entrenamiento Progresivo</h3>
+                <p>Ejercicios estructurados en 9 niveles que entrenan tu visión periférica y velocidad mental</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits -->
+    <section class="benefits-section">
+        <div class="benefits-card">
+            <h2 class="benefits-title">
+                <i class="bi bi-check-circle"></i>
+                Beneficios del Método Campayo
+            </h2>
+            <div class="benefits-list">
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <div class="benefit-text">
+                        <strong>Triplicar tu velocidad de lectura</strong> manteniendo o mejorando tu comprensión
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <div class="benefit-text">
+                        <strong>Ampliar tu campo visual</strong> para captar más palabras simultáneamente
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <div class="benefit-text">
+                        <strong>Eliminar la subvocalización</strong> y leer directamente con los ojos
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <div class="benefit-text">
+                        <strong>Mejorar tu concentración</strong> y capacidad de enfoque mental
+                    </div>
+                </div>
+                <div class="benefit-item">
+                    <div class="benefit-icon">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <div class="benefit-text">
+                        <strong>Desarrollar memoria fotográfica</strong> para recordar lo que lees
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="process-section">
+        <div class="process-card">
+            <h2 class="process-title">
+                <i class="bi bi-gear"></i>
+                ¿Cómo funciona?
+            </h2>
+            <div class="process-steps">
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Test Inicial</h4>
+                        <p>Mide tu velocidad de lectura y comprensión actuales</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Entrenamiento Diario</h4>
+                        <p>Practica ejercicios de 5-10 minutos diseñados por Ramón Campayo</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Progresión</h4>
+                        <p>Avanza por 9 niveles de dificultad a tu ritmo</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <h4>Tests Periódicos</h4>
+                        <p>Evalúa tu mejora con tests de velocidad y memoria</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Free Access Notice -->
+    <section class="access-notice">
+        <div class="notice-card">
+            <div class="notice-icon">
+                <i class="bi bi-gift"></i>
+            </div>
+            <div class="notice-content">
+                <h3>Acceso Gratuito</h3>
+                <p>
+                    Incluye el test inicial y los primeros 3 niveles de entrenamiento. 
+                    Suficiente para ver resultados significativos en tu velocidad de lectura.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Call to Action -->
+    <section class="cta-section">
+        <div class="cta-content">
+            <h2 class="cta-title">Comienza Hoy tu Transformación</h2>
+            <p class="cta-text">
+                Únete a miles de personas que ya han multiplicado su velocidad de lectura con el método Campayo
+            </p>
+            <a href="{% url 'usuarios:registro' %}" class="cta-button">
+                <i class="bi bi-person-plus"></i>
+                Crear Cuenta Gratis
+            </a>
+        </div>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Home Page Layout */
+.home-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 var(--space-md);
+}
+
+/* Hero Section */
+.hero {
+    text-align: center;
+    padding: var(--space-2xl) 0;
+    margin-bottom: var(--space-2xl);
+}
+
+.hero-content {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.hero-icon {
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    margin: 0 auto var(--space-xl);
+    box-shadow: var(--shadow-lg);
+}
+
+.hero-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: var(--space-lg);
+    line-height: 1.2;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    color: var(--text-muted);
+    margin-bottom: var(--space-2xl);
+    line-height: 1.6;
+}
+
+.hero-actions {
+    display: flex;
+    gap: var(--space-md);
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-primary,
+.btn-secondary {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-lg) var(--space-xl);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: var(--transition);
+    min-height: 52px;
+    min-width: 180px;
+    justify-content: center;
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+    border: 1px solid var(--primary);
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    border-color: var(--primary-dark);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-secondary {
+    background: none;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+}
+
+.btn-secondary:hover {
+    background: var(--primary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Campayo Section */
+.campayo-section {
+    margin-bottom: var(--space-2xl);
+}
+
+.campayo-card {
+    background: linear-gradient(135deg, rgba(74, 124, 89, 0.05), rgba(74, 124, 89, 0.1));
+    border: 1px solid rgba(74, 124, 89, 0.2);
+    border-radius: var(--radius-lg);
+    padding: var(--space-2xl);
+    text-align: center;
+}
+
+.campayo-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.campayo-header i {
+    font-size: 2rem;
+    color: var(--primary);
+}
+
+.campayo-header h2 {
+    margin: 0;
+    color: var(--primary);
+    font-size: 1.75rem;
+}
+
+.campayo-description {
+    font-size: 1.125rem;
+    line-height: 1.6;
+    margin-bottom: var(--space-lg);
+    color: var(--text);
+}
+
+.campayo-achievement {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-lg);
+    background: var(--primary);
+    color: white;
+    border-radius: var(--radius-full);
+    font-weight: 600;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+/* Features Section */
+.features-section {
+    margin-bottom: var(--space-2xl);
+}
+
+.section-title {
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: var(--space-2xl);
+    color: var(--primary);
+}
+
+.features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: var(--space-xl);
+}
+
+.feature-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl);
+    text-align: center;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    transition: var(--transition);
+}
+
+.feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+}
+
+.feature-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin: 0 auto var(--space-lg);
+}
+
+.feature-card h3 {
+    margin-bottom: var(--space-md);
+    color: var(--primary);
+    font-size: 1.25rem;
+}
+
+.feature-card p {
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* Benefits Section */
+.benefits-section {
+    margin-bottom: var(--space-2xl);
+}
+
+.benefits-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-2xl);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+}
+
+.benefits-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+    color: var(--primary);
+    justify-content: center;
+    text-align: center;
+}
+
+.benefits-title i {
+    font-size: 1.5rem;
+}
+
+.benefits-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+.benefit-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-md);
+}
+
+.benefit-icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+}
+
+.benefit-icon i {
+    color: var(--success);
+    font-size: 1.25rem;
+}
+
+.benefit-text {
+    line-height: 1.6;
+    color: var(--text);
+}
+
+.benefit-text strong {
+    color: var(--primary);
+}
+
+/* Process Section */
+.process-section {
+    margin-bottom: var(--space-2xl);
+}
+
+.process-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-2xl);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+}
+
+.process-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+    color: var(--primary);
+    justify-content: center;
+    text-align: center;
+}
+
+.process-title i {
+    font-size: 1.5rem;
+}
+
+.process-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: var(--space-xl);
+}
+
+.step-item {
+    display: flex;
+    gap: var(--space-md);
+    align-items: flex-start;
+}
+
+.step-number {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    background: var(--primary);
+    color: white;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.125rem;
+}
+
+.step-content h4 {
+    margin: 0 0 var(--space-sm) 0;
+    color: var(--primary);
+    font-size: 1.125rem;
+}
+
+.step-content p {
+    margin: 0;
+    color: var(--text-muted);
+    line-height: 1.5;
+}
+
+/* Access Notice */
+.access-notice {
+    margin-bottom: var(--space-2xl);
+}
+
+.notice-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    padding: var(--space-xl);
+    background: rgba(244, 162, 97, 0.1);
+    border: 1px solid var(--warning);
+    border-radius: var(--radius-lg);
+}
+
+.notice-icon {
+    flex-shrink: 0;
+    width: 60px;
+    height: 60px;
+    background: var(--warning);
+    color: white;
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.notice-content h3 {
+    margin: 0 0 var(--space-sm) 0;
+    color: var(--primary);
+}
+
+.notice-content p {
+    margin: 0;
+    color: var(--text);
+    line-height: 1.6;
+}
+
+/* Call to Action */
+.cta-section {
+    text-align: center;
+    padding: var(--space-2xl) 0;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    border-radius: var(--radius-lg);
+    color: white;
+    margin-bottom: var(--space-2xl);
+}
+
+.cta-content {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0 var(--space-lg);
+}
+
+.cta-title {
+    font-size: 2rem;
+    margin-bottom: var(--space-lg);
+    color: white;
+}
+
+.cta-text {
+    font-size: 1.125rem;
+    margin-bottom: var(--space-2xl);
+    opacity: 0.95;
+    line-height: 1.6;
+}
+
+.cta-button {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-lg) var(--space-2xl);
+    background: white;
+    color: var(--primary);
+    border-radius: var(--radius-md);
+    font-size: 1.125rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: var(--transition);
+    box-shadow: var(--shadow-md);
+}
+
+.cta-button:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    color: var(--primary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-icon {
+        width: 100px;
+        height: 100px;
+        font-size: 2.5rem;
+    }
+    
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.125rem;
+    }
+    
+    .hero-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .btn-primary,
+    .btn-secondary {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .features-grid {
+        grid-template-columns: 1fr;
+        gap: var(--space-lg);
+    }
+    
+    .process-steps {
+        grid-template-columns: 1fr;
+        gap: var(--space-lg);
+    }
+    
+    .notice-card {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--space-md);
+    }
+    
+    .section-title {
+        font-size: 1.75rem;
+    }
+    
+    .cta-title {
+        font-size: 1.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .home-page {
+        padding: 0 var(--space-sm);
+    }
+    
+    .hero {
+        padding: var(--space-xl) 0;
+    }
+    
+    .hero-title {
+        font-size: 1.75rem;
+    }
+    
+    .campayo-card,
+    .benefits-card,
+    .process-card {
+        padding: var(--space-xl) var(--space-lg);
+    }
+    
+    .feature-card {
+        padding: var(--space-lg);
+    }
+    
+    .step-item {
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+    }
+}
+</style>
+{% endblock %}

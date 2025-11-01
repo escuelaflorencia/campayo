@@ -1,0 +1,32 @@
+¡Bienvenido a CAMPAYO, {{ usuario.nombre }}!
+
+Nos complace darte la bienvenida a Campayo, tu plataforma personal para desarrollar habilidades de lectura rápida y memoria usando el método probado de Ramón Campayo.
+
+TU CUENTA:
+-----------
+Email: {{ usuario.email }}
+Plan actual: {{ usuario.get_plan_display }}
+Estado: Activa
+
+¿QUÉ PUEDES HACER AHORA?
+------------------------
+✓ Realizar el test inicial para medir tu velocidad base de lectura
+✓ Acceder a ejercicios de entrenamiento de los niveles 1-3
+✓ Practicar técnicas de entrenamiento del ojo y procesamiento mental
+✓ Seguir tu progreso con métricas detalladas
+{% if usuario.es_pro %}✓ Acceso completo a todos los niveles (1-9) con tu plan Pro{% endif %}
+
+COMENZAR ENTRENAMIENTO:
+----------------------
+Para empezar tu entrenamiento, inicia sesión en:
+{{ dashboard_url }}
+
+Si necesitas ayuda o tienes alguna pregunta, no dudes en contactarnos.
+
+¡Bienvenido al método Campayo!
+
+Equipo Campayo
+Tu plataforma de lectura rápida
+
+---
+Este email fue enviado automáticamente. Si no te registraste en Campayo, puedes ignorar este mensaje.

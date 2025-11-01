@@ -1,0 +1,50 @@
+CAMPAYO - {% if aprobada %}¡Tu plan ha sido actualizado!{% else %}Solicitud procesada{% endif %}
+
+Hola {{ usuario.nombre }},
+
+{% if aprobada %}
+¡SOLICITUD APROBADA!
+--------------------
+Tu solicitud de cambio de plan ha sido aprobada.
+
+TU NUEVO PLAN:
+--------------
+{% if usuario.es_pro %}⭐ Plan Pro{% else %}👤 Plan Gratuito{% endif %}
+
+{% if usuario.es_pro %}
+AHORA PUEDES DISFRUTAR DE:
+--------------------------
+✓ Acceso completo a todos los niveles de entrenamiento (1-9)
+✓ Ejercicios avanzados de lectura rápida
+✓ Técnicas especializadas de memoria
+✓ Seguimiento detallado de tu progreso
+✓ Contenido exclusivo del método Campayo
+{% else %}
+TU PLAN GRATUITO INCLUYE:
+-------------------------
+✓ Acceso a niveles de entrenamiento 1-3
+✓ Test inicial de velocidad de lectura
+✓ Ejercicios básicos de entrenamiento
+✓ Seguimiento de progreso básico
+{% endif %}
+
+{% else %}
+SOLICITUD NO APROBADA
+---------------------
+Tu solicitud de cambio de plan no ha sido aprobada en este momento.
+
+TU PLAN ACTUAL:
+---------------
+{% if usuario.es_pro %}⭐ Plan Pro{% else %}👤 Plan Gratuito{% endif %}
+
+Puedes realizar una nueva solicitud en cualquier momento desde tu dashboard si deseas cambiar de plan en el futuro.
+{% endif %}
+
+ACCEDER A TU CUENTA:
+-------------------
+{{ dashboard_url }}
+
+Si tienes alguna pregunta sobre tu plan o necesitas ayuda, no dudes en contactarnos.
+
+Equipo TSR
+Tu plataforma de lectura rápida

@@ -1,0 +1,349 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Resultados - Campayo{% endblock %}
+
+{% block content %}
+
+<div class="results-header">
+    <div class="celebration-icon">🎉</div>
+    <h1>¡Test Completado!</h1>
+    <p>{{ sesion.test.titulo }}</p>
+    <p class="text-small">{{ sesion.fecha_fin|date:"d/m/Y H:i" }}</p>
+</div>
+
+<div class="metrics-grid">
+    <div class="metric-card">
+        <div class="comprehension-circle">
+            {{ comprension_porcentaje|floatformat:0 }}%
+        </div>
+        <div class="metric-label-big">Comprensión</div>
+        <div class="text-small text-muted">{{ respuestas_correctas }}/{{ total_preguntas }} correctas</div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-value-big">{{ velocidad_lectura }}</div>
+        <div class="metric-label-big">Velocidad (ppm)</div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-value-big">{{ velocidad_memorizacion }}</div>
+        <div class="metric-label-big">Vm (ppm)</div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-value-big">{{ tiempo_lectura_formateado }}</div>
+        <div class="metric-label-big">Tiempo de lectura</div>
+    </div>
+</div>
+
+<div class="explanation-section">
+    <h2>
+        <i class="bi bi-lightbulb"></i> Evaluación de tus resultados
+    </h2>
+
+    <div class="explanation-item">
+        <h4>Velocidad de Lectura (V)</h4>
+        <p>{{ evaluacion_velocidad.descripcion }}</p>
+    </div>
+
+    <div class="explanation-item">
+        <h4>Velocidad de Memorización (Vm)</h4>
+        <p>{{ evaluacion_vm.descripcion }}</p>
+    </div>
+
+    <div class="explanation-item">
+        <h4>Comprensión</h4>
+        <p>{{ evaluacion_comprension.descripcion }}</p>
+    </div>
+
+    <div class="motivation-box">
+        <strong><i class="bi bi-star"></i> {{ mensaje_motivacional }}</strong>
+    </div>
+</div>
+
+<div class="answer-review-card">
+    <h2>
+        <i class="bi bi-clipboard-check"></i> Revisión de tus respuestas
+    </h2>
+
+    {% for respuesta in respuestas_detalle %}
+    <div class="answer-item {% if respuesta.es_correcta %}correct{% else %}incorrect{% endif %}">
+        <div class="answer-header">
+            <strong>Pregunta {{ respuesta.pregunta_numero }}</strong>
+            <div class="answer-status {% if respuesta.es_correcta %}correct{% else %}incorrect{% endif %}">
+                {% if respuesta.es_correcta %}
+                    <i class="bi bi-check-circle-fill"></i> Correcta
+                {% else %}
+                    <i class="bi bi-x-circle-fill"></i> Incorrecta
+                {% endif %}
+            </div>
+        </div>
+
+        <p>{{ respuesta.pregunta_texto }}</p>
+
+        <div class="answer-options">
+            {% for opcion in respuesta.opciones %}
+            <div class="answer-option {% if opcion.es_correcta %}correct-answer{% endif %} {% if opcion.fue_seleccionada %}selected-answer{% endif %}">
+                {% if opcion.es_correcta %}
+                    <i class="bi bi-check-circle-fill"></i>
+                {% elif opcion.fue_seleccionada %}
+                    <i class="bi bi-x-circle-fill"></i>
+                {% else %}
+                    <i class="bi bi-circle"></i>
+                {% endif %}
+                <span><strong>{{ opcion.letra }})</strong> {{ opcion.texto }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div class="results-actions">
+    <a href="{% url 'test_lectura:lista_tests' %}" class="btn btn-outline-primary">
+        <i class="bi bi-list-task"></i> Ver Tests
+    </a>
+    <a href="{% url 'ejercicios:lista' %}" class="btn btn-primary">
+        <i class="bi bi-trophy"></i> Seguir Entrenando
+    </a>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .results-header {
+        background: linear-gradient(135deg, var(--success) 0%, #2d8659 100%);
+        color: white;
+        padding: var(--space-2xl);
+        border-radius: var(--radius-lg);
+        text-align: center;
+        margin-bottom: var(--space-xl);
+    }
+
+    .results-header h1 {
+        color: white;
+        margin-bottom: var(--space-sm);
+    }
+
+    .celebration-icon {
+        font-size: 4rem;
+        margin-bottom: var(--space-md);
+    }
+
+    .metrics-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: var(--space-lg);
+        margin-bottom: var(--space-xl);
+    }
+
+    .metric-card {
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        padding: var(--space-xl);
+        text-align: center;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .metric-value-big {
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: var(--space-sm);
+    }
+
+    .metric-label-big {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+        margin-bottom: var(--space-xs);
+    }
+
+    .comprehension-circle {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--success) 0%, #2d8659 100%);
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto var(--space-md);
+        font-size: 2.5rem;
+        font-weight: 700;
+    }
+
+    .explanation-section {
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        padding: var(--space-xl);
+        margin-bottom: var(--space-xl);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .explanation-section h2 {
+        margin-bottom: var(--space-lg);
+    }
+
+    .explanation-item {
+        padding: var(--space-lg);
+        background: var(--bg);
+        border-radius: var(--radius-md);
+        margin-bottom: var(--space-md);
+    }
+
+    .explanation-item:last-of-type {
+        margin-bottom: var(--space-lg);
+    }
+
+    .explanation-item h4 {
+        color: var(--primary);
+        margin-bottom: var(--space-sm);
+    }
+
+    .explanation-item p {
+        margin-bottom: 0;
+        line-height: 1.6;
+    }
+
+    .motivation-box {
+        background: rgba(74, 124, 89, 0.1);
+        padding: var(--space-lg);
+        border-radius: var(--radius-md);
+        border-left: 4px solid var(--success);
+    }
+
+    .answer-review-card {
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        padding: var(--space-xl);
+        margin-bottom: var(--space-xl);
+        box-shadow: var(--shadow-sm);
+    }
+
+    .answer-review-card h2 {
+        margin-bottom: var(--space-lg);
+    }
+
+    .answer-item {
+        background: var(--bg);
+        border-radius: var(--radius-md);
+        padding: var(--space-lg);
+        margin-bottom: var(--space-md);
+    }
+
+    .answer-item.correct {
+        border-left: 4px solid var(--success);
+    }
+
+    .answer-item.incorrect {
+        border-left: 4px solid var(--danger);
+    }
+
+    .answer-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: var(--space-md);
+        gap: var(--space-md);
+    }
+
+    .answer-status {
+        display: flex;
+        align-items: center;
+        gap: var(--space-xs);
+        font-size: 0.875rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .answer-status.correct {
+        color: var(--success);
+    }
+
+    .answer-status.incorrect {
+        color: var(--danger);
+    }
+
+    .answer-item > p {
+        margin-bottom: var(--space-md);
+        line-height: 1.6;
+    }
+
+    .answer-options {
+        margin-top: var(--space-md);
+    }
+
+    .answer-option {
+        padding: var(--space-md);
+        border-radius: var(--radius-sm);
+        margin-bottom: var(--space-xs);
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+        line-height: 1.5;
+    }
+
+    .answer-option:last-child {
+        margin-bottom: 0;
+    }
+
+    .answer-option.correct-answer {
+        background: rgba(74, 124, 89, 0.1);
+        color: var(--success);
+    }
+
+    .answer-option.selected-answer:not(.correct-answer) {
+        background: rgba(231, 111, 81, 0.1);
+        color: var(--danger);
+    }
+
+    .results-actions {
+        display: flex;
+        gap: var(--space-md);
+        justify-content: center;
+        margin-bottom: var(--space-2xl);
+        flex-wrap: wrap;
+    }
+
+    @media (max-width: 640px) {
+        .results-header {
+            padding: var(--space-xl) var(--space-lg);
+        }
+
+        .celebration-icon {
+            font-size: 3rem;
+        }
+
+        .metrics-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .comprehension-circle {
+            width: 120px;
+            height: 120px;
+            font-size: 2rem;
+        }
+
+        .metric-value-big {
+            font-size: 2rem;
+        }
+
+        .answer-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: var(--space-sm);
+        }
+
+        .results-actions {
+            flex-direction: column;
+        }
+
+        .results-actions .btn {
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}

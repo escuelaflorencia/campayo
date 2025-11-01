@@ -1,0 +1,763 @@
+{% extends 'base.html' %}
+
+{% block title %}Entrenamiento - Campayo{% endblock %}
+
+{% block content %}
+
+<!-- Header de Ejercicios -->
+<div class="ejercicios-header">
+    <h1>Ejercicio Mental</h1>
+    <p>Ejercita tu memoria y agilidad con el método de Ramón Campayo</p>
+</div>
+
+<!-- Estado del Test Inicial -->
+{% if not test_inicial_completado %}
+<div class="alert alert-warning">
+    <i class="alert-icon bi bi-exclamation-triangle"></i>
+    <div class="alert-content">
+        <div class="alert-title">Test Inicial Requerido</div>
+        <p class="text-small">Debes completar el test inicial antes de comenzar el entrenamiento.</p>
+        <a href="{% url 'test_lectura:lista_tests' %}" class="btn btn-warning btn-sm" style="margin-top: 12px;">
+            <i class="bi bi-speedometer2"></i> Hacer Test Inicial
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<!-- Categorías de Entrenamiento -->
+<div class="categories-container">
+    {% for categoria_data in categorias_ejercicios %}
+    <div class="category-card">
+        <!-- Header de Categoría (Clickeable) -->
+        <button 
+            class="category-header"
+            type="button"
+            data-category-toggle="{{ categoria_data.categoria.codigo }}"
+            aria-expanded="false"
+            aria-controls="category-{{ categoria_data.categoria.codigo }}">
+            <div class="category-header-left">
+                <div class="category-icon category-icon-{{ categoria_data.categoria.codigo|lower }}">
+                    {% if categoria_data.categoria.codigo == 'EL' %}
+                        <i class="bi bi-book"></i>
+                    {% elif categoria_data.categoria.codigo == 'EO' %}
+                        <i class="bi bi-eye"></i>
+                    {% elif categoria_data.categoria.codigo == 'EPM' %}
+                        <i class="bi bi-grid-3x3"></i>
+                    {% elif categoria_data.categoria.codigo == 'EVM' %}
+                        <i class="bi bi-lightning"></i>
+                    {% elif categoria_data.categoria.codigo == 'EMD' %}
+                        <i class="bi bi-bullseye"></i>
+                    {% endif %}
+                </div>
+                <div class="category-info">
+                    <h3 class="category-title">{{ categoria_data.categoria.nombre }}</h3>
+                    <p class="category-description">{{ categoria_data.categoria.descripcion }}</p>
+                </div>
+            </div>
+            <div class="category-header-right">
+               
+                <i class="bi bi-chevron-down category-chevron"></i>
+            </div>
+        </button>
+
+        <!-- Contenido de Categoría (Colapsable) -->
+        <div 
+            class="category-content"
+            id="category-{{ categoria_data.categoria.codigo }}"
+            style="display: none;">
+            
+            {% if categoria_data.ejercicios_agrupados %}
+                {% for ejercicio_grupo in categoria_data.ejercicios_agrupados %}
+                <div class="exercise-item">
+                    <!-- Botón del Ejercicio -->
+                    <button 
+                        class="exercise-button"
+                        type="button"
+                        data-exercise-toggle="{{ ejercicio_grupo.codigo_base }}"
+                        aria-expanded="false"
+                        aria-controls="exercise-{{ ejercicio_grupo.codigo_base }}">
+                        <div class="exercise-button-content">
+                            <div class="exercise-title">
+                                {{ ejercicio_grupo.nombre }}
+                            </div>
+                            <div class="exercise-meta">
+                                <span class="exercise-count">
+                                    {{ ejercicio_grupo.niveles|length }} niveles
+                                </span>
+                                <span class="exercise-progress">
+                                    <i class="bi bi-check-circle"></i> 
+                                    {{ ejercicio_grupo.completados }}/{{ ejercicio_grupo.niveles|length }}
+                                </span>
+                            </div>
+                        </div>
+                        <i class="bi bi-chevron-down exercise-chevron"></i>
+                    </button>
+
+                    <!-- Lista de Niveles (Colapsable) -->
+                    <div 
+                        class="levels-list"
+                        id="exercise-{{ ejercicio_grupo.codigo_base }}"
+                        style="display: none;">
+                        {% for nivel_data in ejercicio_grupo.niveles %}
+                        <div class="level-item {% if not nivel_data.puede_acceder %}level-locked{% elif nivel_data.completado %}level-completed{% endif %}">
+                            {% if nivel_data.puede_acceder %}
+                                <a href="{% url 'ejercicios:detalle' nivel_data.ejercicio.id %}" class="level-link">
+                                    <div class="level-info">
+                                        <div class="level-number">
+                                            Nivel {{ nivel_data.ejercicio.nivel }}
+                                        </div>
+                                        {% if nivel_data.ejercicio.requiere_pro %}
+                                        <span class="badge badge-warning" style="margin-left: 8px;">
+                                            <i class="bi bi-star"></i> Pro
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="level-status">
+                                        {% if nivel_data.completado %}
+                                            <i class="bi bi-check-circle-fill level-status-icon level-status-completed"></i>
+                                        {% else %}
+                                            <i class="bi bi-play-circle level-status-icon level-status-available"></i>
+                                        {% endif %}
+                                    </div>
+                                </a>
+                            {% else %}
+                                <div class="level-link level-link-disabled">
+                                    <div class="level-info">
+                                        <div class="level-number">
+                                            Nivel {{ nivel_data.ejercicio.nivel }}
+                                        </div>
+                                        {% if nivel_data.requisitos %}
+                                        <div class="level-requirements">
+                                            {{ nivel_data.requisitos.0 }}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    <div class="level-status">
+                                        <i class="bi bi-lock-fill level-status-icon level-status-locked"></i>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state-small">
+                    <i class="bi bi-inbox"></i>
+                    <p>No hay ejercicios disponibles en esta categoría</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+        <i class="bi bi-collection empty-state-icon"></i>
+        <p class="empty-state-text">No hay entrenamientos disponibles</p>
+        <p class="text-muted text-small">Los ejercicios se cargarán cuando estén disponibles</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Info del Plan (usuarios gratuitos) -->
+{% if not usuario.es_pro and not usuario.es_gestor %}
+<div class="card" style="margin-top: 32px;">
+    <div class="card-body">
+        <div class="plan-info">
+            <div class="plan-info-icon">
+                <i class="bi bi-info-circle"></i>
+            </div>
+            <div class="plan-info-content">
+                <h4 class="plan-info-title">Plan Gratuito</h4>
+                <p class="plan-info-text">
+                    Tienes acceso a niveles 1-3 de todos los ejercicios. 
+                    Para desbloquear niveles avanzados (4-9), contacta con un administrador para obtener el plan Pro.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Header específico */
+    .ejercicios-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: var(--space-xl) var(--space-lg);
+        margin-bottom: var(--space-xl);
+        border-radius: var(--radius-lg);
+    }
+
+    .ejercicios-header h1 {
+        color: white;
+        margin-bottom: var(--space-sm);
+    }
+
+/* Stats Quick */
+.stats-quick {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-sm);
+    margin-bottom: var(--space-xl);
+}
+
+.stat-quick-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--space-md);
+    background: var(--bg-card);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-quick-icon {
+    font-size: 1.5rem;
+    color: var(--primary);
+    margin-bottom: var(--space-xs);
+}
+
+.stat-quick-content {
+    text-align: center;
+}
+
+.stat-quick-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.stat-quick-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Categories Container */
+.categories-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+/* Category Card */
+.category-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+    transition: var(--transition);
+}
+
+.category-card.active {
+    box-shadow: var(--shadow-md);
+}
+
+/* Category Header */
+.category-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-lg);
+    background: var(--bg-card);
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: left;
+    gap: var(--space-md);
+}
+
+.category-header:hover {
+    background: var(--bg);
+}
+
+.category-header.active {
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+}
+
+.category-header-left {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    flex: 1;
+    min-width: 0;
+}
+
+.category-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    flex-shrink: 0;
+}
+
+.category-icon-el {
+    background: rgba(74, 124, 89, 0.1);
+    color: var(--primary);
+}
+
+.category-icon-eo {
+    background: rgba(244, 162, 97, 0.1);
+    color: var(--secondary);
+}
+
+.category-icon-epm {
+    background: rgba(231, 111, 81, 0.1);
+    color: var(--accent);
+}
+
+.category-icon-evm {
+    background: rgba(107, 155, 209, 0.1);
+    color: var(--info);
+}
+
+.category-icon-emd {
+    background: rgba(156, 39, 176, 0.1);
+    color: #9c27b0;
+}
+
+.category-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.category-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--text);
+}
+
+.category-description {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.category-header-right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex-shrink: 0;
+}
+
+.category-badge {
+    padding: 4px 12px;
+    background: var(--primary);
+    color: white;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.category-chevron {
+    font-size: 1.25rem;
+    color: var(--text-muted);
+    transition: transform 0.3s ease;
+}
+
+.category-header.active .category-chevron {
+    transform: rotate(180deg);
+}
+
+/* Category Content */
+.category-content {
+    padding: var(--space-md);
+    border-top: 1px solid var(--border);
+}
+
+/* Exercise Item */
+.exercise-item {
+    margin-bottom: var(--space-sm);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: var(--bg);
+}
+
+.exercise-item:last-child {
+    margin-bottom: 0;
+}
+
+/* Exercise Button */
+.exercise-button {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-md);
+    background: var(--bg);
+    border: none;
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: left;
+}
+
+.exercise-button:hover {
+    background: var(--border);
+}
+
+.exercise-button.active {
+    background: var(--border);
+}
+
+.exercise-button-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.exercise-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+}
+
+.exercise-meta {
+    display: flex;
+    gap: var(--space-md);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.exercise-count {
+    display: flex;
+    align-items: center;
+}
+
+.exercise-progress {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.exercise-chevron {
+    font-size: 1rem;
+    color: var(--text-muted);
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+}
+
+.exercise-button.active .exercise-chevron {
+    transform: rotate(180deg);
+}
+
+/* Levels List */
+.levels-list {
+    padding: var(--space-sm) var(--space-md);
+}
+
+/* Level Item */
+.level-item {
+    margin-bottom: var(--space-xs);
+}
+
+.level-item:last-child {
+    margin-bottom: 0;
+}
+
+.level-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-md);
+    background: white;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: var(--transition);
+    border: 2px solid var(--border);
+    min-height: 56px;
+}
+
+.level-link:hover {
+    border-color: var(--primary);
+    transform: translateX(4px);
+}
+
+.level-link-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.level-link-disabled:hover {
+    border-color: var(--border);
+    transform: none;
+}
+
+.level-completed .level-link {
+    border-color: var(--success);
+    background: rgba(74, 124, 89, 0.05);
+}
+
+.level-locked .level-link {
+    background: var(--bg);
+}
+
+.level-info {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+}
+
+.level-number {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.level-requirements {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-left: var(--space-sm);
+}
+
+.level-status {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.level-status-icon {
+    font-size: 1.25rem;
+}
+
+.level-status-completed {
+    color: var(--success);
+}
+
+.level-status-available {
+    color: var(--primary);
+}
+
+.level-status-locked {
+    color: var(--text-muted);
+}
+
+/* Plan Info */
+.plan-info {
+    display: flex;
+    gap: var(--space-md);
+    align-items: flex-start;
+}
+
+.plan-info-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(107, 155, 209, 0.1);
+    color: var(--info);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.plan-info-content {
+    flex: 1;
+}
+
+.plan-info-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: var(--space-xs);
+}
+
+.plan-info-text {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 0;
+    line-height: 1.5;
+}
+
+/* Empty States */
+.empty-state-small {
+    text-align: center;
+    padding: var(--space-xl) var(--space-md);
+    color: var(--text-muted);
+}
+
+.empty-state-small i {
+    font-size: 2rem;
+    opacity: 0.5;
+    margin-bottom: var(--space-sm);
+}
+
+.empty-state-small p {
+    font-size: 0.875rem;
+    margin-bottom: 0;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .category-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 1.5rem;
+    }
+    
+    .category-title {
+        font-size: 1rem;
+    }
+    
+    .category-description {
+        font-size: 0.75rem;
+    }
+    
+    .category-header {
+        padding: var(--space-md);
+    }
+    
+    .category-content {
+        padding: var(--space-sm);
+    }
+    
+    .stat-quick-value {
+        font-size: 1.25rem;
+    }
+    
+    .stat-quick-label {
+        font-size: 0.625rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .stats-quick {
+        gap: var(--space-md);
+    }
+    
+    .stat-quick-item {
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: var(--space-md);
+    }
+    
+    .stat-quick-content {
+        text-align: left;
+    }
+}
+
+/* Animaciones */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        max-height: 1000px;
+    }
+}
+
+.category-content.animating {
+    animation: slideDown 0.3s ease-out;
+}
+
+.levels-list.animating {
+    animation: slideDown 0.3s ease-out;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle de categorías
+    const categoryToggles = document.querySelectorAll('[data-category-toggle]');
+    
+    categoryToggles.forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const categoryId = this.getAttribute('data-category-toggle');
+            const content = document.getElementById('category-' + categoryId);
+            const isActive = this.classList.contains('active');
+            
+            // Cerrar todas las categorías
+            document.querySelectorAll('.category-header.active').forEach(header => {
+                if (header !== this) {
+                    header.classList.remove('active');
+                    const otherContent = document.getElementById('category-' + header.getAttribute('data-category-toggle'));
+                    if (otherContent) {
+                        otherContent.style.display = 'none';
+                    }
+                }
+            });
+            
+            // Toggle esta categoría
+            if (isActive) {
+                this.classList.remove('active');
+                content.style.display = 'none';
+                this.setAttribute('aria-expanded', 'false');
+            } else {
+                this.classList.add('active');
+                content.style.display = 'block';
+                content.classList.add('animating');
+                this.setAttribute('aria-expanded', 'true');
+                
+                setTimeout(() => {
+                    content.classList.remove('animating');
+                }, 300);
+            }
+        });
+    });
+    
+    // Toggle de ejercicios (niveles)
+    const exerciseToggles = document.querySelectorAll('[data-exercise-toggle]');
+    
+    exerciseToggles.forEach(toggle => {
+        toggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const exerciseId = this.getAttribute('data-exercise-toggle');
+            const levelsList = document.getElementById('exercise-' + exerciseId);
+            const isActive = this.classList.contains('active');
+            
+            // Cerrar todos los ejercicios en esta categoría
+            const parent = this.closest('.category-content');
+            parent.querySelectorAll('.exercise-button.active').forEach(btn => {
+                if (btn !== this) {
+                    btn.classList.remove('active');
+                    const otherId = btn.getAttribute('data-exercise-toggle');
+                    const otherLevels = document.getElementById('exercise-' + otherId);
+                    if (otherLevels) {
+                        otherLevels.style.display = 'none';
+                    }
+                }
+            });
+            
+            // Toggle este ejercicio
+            if (isActive) {
+                this.classList.remove('active');
+                levelsList.style.display = 'none';
+                this.setAttribute('aria-expanded', 'false');
+            } else {
+                this.classList.add('active');
+                levelsList.style.display = 'block';
+                levelsList.classList.add('animating');
+                this.setAttribute('aria-expanded', 'true');
+                
+                setTimeout(() => {
+                    levelsList.classList.remove('animating');
+                }, 300);
+            }
+        });
+    });
+    
+    // Abrir primera categoría por defecto (opcional)
+    const firstCategory = document.querySelector('[data-category-toggle]');
+    if (firstCategory) {
+        // firstCategory.click(); // Descomentar para abrir por defecto
+    }
+});
+</script>
+{% endblock %}

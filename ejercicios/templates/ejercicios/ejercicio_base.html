@@ -1,0 +1,576 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4A7C59">
+    <title>{{ ejercicio.nombre }} - Campayo</title>
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    
+    <style>
+        /* Override for exercise page */
+        body {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        /* Exercise Header */
+        .exercise-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            padding: var(--space-md);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-md);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            flex: 1;
+            min-width: 0;
+        }
+
+        .btn-back {
+            background: none;
+            border: none;
+            padding: var(--space-sm);
+            cursor: pointer;
+            color: var(--text);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            min-height: 40px;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+        }
+
+        .btn-back:hover {
+            background: var(--bg);
+        }
+
+        .btn-back i {
+            font-size: 1.25rem;
+        }
+
+        .exercise-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text);
+            margin: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .btn-instructions {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: var(--space-sm) var(--space-md);
+            cursor: pointer;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            font-size: 0.875rem;
+            font-weight: 500;
+            min-height: 40px;
+            transition: var(--transition);
+            flex-shrink: 0;
+        }
+
+        .btn-instructions:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-instructions i {
+            font-size: 1rem;
+        }
+
+        /* Exercise Container */
+        .exercise-container-full {
+            width: 100%;
+            min-height: calc(100vh - 65px);
+            padding: 2px;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg);
+        }
+
+        .exercise-content-full {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: var(--space-md);
+            background: transparent;
+        }
+
+        /* Start Screen */
+        #start-screen {
+            text-align: center;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        .start-icon {
+            font-size: 4rem;
+            color: var(--primary);
+            margin-bottom: var(--space-lg);
+        }
+
+        #start-screen h2 {
+            font-size: 1.25rem;
+            margin-bottom: var(--space-lg);
+        }
+
+        /* Display Area */
+        #display-area {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #exercise-display-container {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            max-width: 500px;
+            margin: var(--space-lg) auto 0;
+        }
+
+        .progress-bar-wrapper {
+            height: 6px;
+            background: var(--border);
+            border-radius: var(--radius-full);
+            overflow: hidden;
+            margin-bottom: var(--space-sm);
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            transition: width 0.3s ease;
+            border-radius: var(--radius-full);
+        }
+
+        .progress-text {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        /* Results & Completion Screens */
+        .results-screen,
+        .completion-screen {
+            text-align: center;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: var(--space-xl);
+        }
+
+        .screen-icon {
+            font-size: 4rem;
+            margin-bottom: var(--space-lg);
+        }
+
+        .icon-info { color: var(--info); }
+        .icon-success { color: var(--success); }
+
+        .results-card {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-sm);
+            margin: var(--space-lg) 0;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-lg);
+        }
+
+        .result-item {
+            text-align: center;
+        }
+
+        .result-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: var(--space-xs);
+        }
+
+        .result-value.success { color: var(--success); }
+        .result-value.danger { color: var(--danger); }
+
+        .result-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-md);
+            margin-top: var(--space-lg);
+        }
+
+        @media (min-width: 640px) {
+            .action-buttons {
+                flex-direction: row;
+                justify-content: center;
+            }
+        }
+
+        /* Instructions Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-md);
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border-radius: var(--radius-lg);
+            max-width: 600px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: var(--space-lg);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            padding: var(--space-xs);
+            cursor: pointer;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            min-width: 40px;
+            min-height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--radius-sm);
+            transition: var(--transition);
+        }
+
+        .modal-close:hover {
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .modal-body {
+            padding: var(--space-lg);
+            line-height: 1.6;
+            color: var(--text);
+        }
+
+        /* Timer Display */
+        .timer-display {
+            font-family: 'Courier New', monospace;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin: var(--space-lg) 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .exercise-title {
+                font-size: 1rem;
+            }
+
+            .btn-instructions span {
+                display: none;
+            }
+
+            .timer-display {
+                font-size: 2rem;
+            }
+
+            .screen-icon {
+                font-size: 3rem;
+            }
+
+            .result-value {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Prevent scroll when modal is open */
+        body.modal-open {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="exercise-header">
+        <div class="header-left">
+            <button class="btn-back" onclick="window.location.href='{% url 'ejercicios:lista' %}'" aria-label="Volver a ejercicios">
+                <i class="bi bi-arrow-left"></i>
+            </button>
+            <h1 class="exercise-title">{{ ejercicio.nombre }}</h1>
+        </div>
+        <button class="btn-instructions" id="btnInstructions" aria-label="Ver instrucciones">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>Instrucciones</span>
+        </button>
+    </header>
+
+    <!-- Exercise Container -->
+    <div class="exercise-container-full">
+        <div class="exercise-content-full" id="exercise-content">
+            
+            <!-- Start Screen -->
+            <div id="start-screen">
+                <i class="bi bi-play-circle start-icon"></i>
+                <h2>¿Listo para entrenar?</h2>
+                <button id="start-exercise" class="btn btn-primary btn-lg">
+                    <i class="bi bi-play-fill"></i> Comenzar
+                </button>
+            </div>
+
+            <!-- Display Area -->
+            <div id="display-area" style="display: none;">
+                <div id="exercise-display-container"></div>
+                
+                <!-- Progress Bar -->
+                <div class="progress-container">
+                    <div class="progress-bar-wrapper">
+                        <div id="progress-bar" class="progress-bar" style="width: 0%"></div>
+                    </div>
+                    <div id="progress-text" class="progress-text">Preparando ejercicio...</div>
+                </div>
+            </div>
+
+            <!-- Results Screen -->
+            <div id="results-screen" style="display: none; text-align: center;">
+                <i class="bi bi-clipboard-data screen-icon icon-info"></i>
+                <h2>Resultados del Ejercicio</h2>
+                
+                <div class="results-card">
+                    <div class="results-grid">
+                        <div class="result-item">
+                            <div class="result-value success" id="correct-count">0</div>
+                            <div class="result-label">Aciertos</div>
+                        </div>
+                        <div class="result-item">
+                            <div class="result-value danger" id="incorrect-count">0</div>
+                            <div class="result-label">Fallos</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button id="continue-to-completion" class="btn btn-primary btn-lg">
+                        <i class="bi bi-check-circle"></i> Continuar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Completion Screen -->
+            <div id="completion-screen" style="display: none;text-align: center;">                
+                <h2>¡Ejercicio Completado!</h2>
+                <i class="bi bi-check-circle screen-icon icon-success"></i>
+                <p class="text-muted">Has completado exitosamente este nivel</p>
+                
+                <div class="action-buttons">
+                    <a href="{% url 'ejercicios:lista' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-list"></i> Ver Ejercicios
+                    </a>
+                    <button type="button" class="btn btn-primary" onclick="location.reload()">
+                        <i class="bi bi-arrow-repeat"></i> Repetir
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instructions Modal -->
+    <div class="modal-overlay" id="instructionsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fa-solid fa-circle-info"></i>
+                    Instrucciones
+                </h3>
+                <button class="modal-close" id="closeModal" aria-label="Cerrar">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                {{ ejercicio.instrucciones|linebreaks }}
+            </div>
+        </div>
+    </div>
+
+    <!-- Token CSRF -->
+    {% csrf_token %}
+
+    <!-- Scripts -->
+    <script src="{% static 'js/metronome.js' %}"></script>
+    <script src="{% static 'js/ejercicios/core.js' %}"></script>
+
+    {% if ejercicio.categoria.codigo == 'EL' %}
+    <script src="{% static 'js/ejercicios/el.js' %}"></script>
+    {% elif ejercicio.categoria.codigo == 'EO' %}
+    <script src="{% static 'js/ejercicios/eo.js' %}"></script>
+    {% elif ejercicio.categoria.codigo == 'EPM' %}
+    <script src="{% static 'js/ejercicios/epm.js' %}"></script>
+    {% elif ejercicio.categoria.codigo == 'EVM' %}
+    <script src="{% static 'js/ejercicios/evm.js' %}"></script>
+    {% elif ejercicio.categoria.codigo == 'EMD' %}
+    <script src="{% static 'js/ejercicios/emd.js' %}"></script>
+    {% endif %}
+
+    <script>
+        // Exercise Config
+        window.EXERCISE_CONFIG = {
+            codigo: '{{ ejercicio.codigo }}',
+            categoria: '{{ ejercicio.categoria.codigo }}',
+            nivel: {{ ejercicio.nivel }},
+            configuracion: {{ configuracion|safe }},
+            ejercicio_id: {{ ejercicio.id }},
+            completarUrl: '{% url "ejercicios:completar" %}'
+        };
+
+        window.availableTests = {{ available_tests|safe }};
+
+        // Instructions Modal
+        const btnInstructions = document.getElementById('btnInstructions');
+        const instructionsModal = document.getElementById('instructionsModal');
+        const closeModal = document.getElementById('closeModal');
+
+        function openInstructionsModal() {
+            instructionsModal.classList.add('active');
+            document.body.classList.add('modal-open');
+        }
+
+        function closeInstructionsModal() {
+            instructionsModal.classList.remove('active');
+            document.body.classList.remove('modal-open');
+        }
+
+        btnInstructions.addEventListener('click', openInstructionsModal);
+        closeModal.addEventListener('click', closeInstructionsModal);
+        
+        // Close on overlay click
+        instructionsModal.addEventListener('click', function(e) {
+            if (e.target === instructionsModal) {
+                closeInstructionsModal();
+            }
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && instructionsModal.classList.contains('active')) {
+                closeInstructionsModal();
+            }
+        });
+
+        // Initialize Exercise
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Inicializando ejercicio:', window.EXERCISE_CONFIG.codigo);
+            
+            if (window.availableTests && window.availableTests.length > 0) {
+                console.log('Tests de lectura disponibles:', window.availableTests.length);
+            }
+            
+            if (typeof ExerciseCore !== 'undefined') {
+                ExerciseCore.init();
+            } else {
+                console.error('ExerciseCore no encontrado');
+            }
+        });
+
+        // Cleanup
+        window.addEventListener('beforeunload', function() {
+            if (typeof ELExercises !== 'undefined' && ELExercises.cleanup) {
+                ELExercises.cleanup();
+            }
+        });
+
+        // Prevent zoom on double tap (iOS)
+        let lastTouchEnd = 0;
+        document.addEventListener('touchend', function(e) {
+            const now = Date.now();
+            if (now - lastTouchEnd <= 300) {
+                e.preventDefault();
+            }
+            lastTouchEnd = now;
+        }, false);
+    </script>
+</body>
+</html>

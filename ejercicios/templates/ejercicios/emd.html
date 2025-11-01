@@ -1,0 +1,840 @@
+{% extends 'ejercicios_base.html' %}
+
+{% block title %}{{ ejercicio.codigo }} - Entrenamiento de Memoria Eidética - Campayo{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Estilos específicos para EMD */
+    .emd-display-area {
+        
+        border-radius: 12px;
+        min-height: 300px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+        margin: 1rem 0;
+    }
+
+    .emd-content {
+        text-align: center;
+        transition: all 0.4s ease;
+        width: 100%;
+        padding: 2rem;
+    }
+
+    /* Display de números */
+    .emd-number-display {
+        font-size: 4rem;
+        font-weight: bold;
+        font-family: 'Courier New', monospace;
+        color: var(--campayo-primary);
+        letter-spacing: 1rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        margin: 2rem 0;
+        line-height: 1.2;
+    }
+
+    .emd-number-display.large {
+        font-size: 5rem;
+        letter-spacing: 1.5rem;
+    }
+
+    .emd-number-display.medium {
+        font-size: 3.5rem;
+        letter-spacing: 0.8rem;
+    }
+
+    .emd-number-display.small {
+        font-size: 3rem;
+        letter-spacing: 0.5rem;
+    }
+
+    /* Animaciones */
+    @keyframes numberFlash {
+        0% { opacity: 0; transform: scale(0.8); }
+        50% { opacity: 1; transform: scale(1.1); }
+        100% { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes numberFade {
+        0% { opacity: 1; transform: scale(1); }
+        100% { opacity: 0; transform: scale(0.9); }
+    }
+
+    .emd-number-enter {
+        animation: numberFlash 0.5s ease-out;
+    }
+
+    .emd-number-exit {
+        animation: numberFade 0.3s ease-in;
+    }
+
+    /* Countdown */
+    .emd-countdown {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.95);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+        border-radius: 12px;
+    }
+
+    .emd-countdown-number {
+        font-size: 6rem;
+        font-weight: bold;
+        color: var(--campayo-primary);
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        animation: pulse 1s infinite;
+    }
+
+    .emd-countdown-text {
+        font-size: 1.25rem;
+        color: #6c757d;
+        margin-top: 1rem;
+    }
+
+    /* Fase de recuerdo */
+    .emd-recall {
+        text-align: center;
+    }
+
+    .emd-recall-title {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--campayo-success);
+        margin-bottom: 2rem;
+    }
+
+    .emd-input-group {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        margin: 2rem 0;
+        flex-wrap: wrap;
+    }
+
+    .emd-digit-input {
+        width: 60px;
+        height: 80px;
+        font-size: 2rem;
+        font-weight: bold;
+        font-family: 'Courier New', monospace;
+        text-align: center;
+        border: 3px solid #dee2e6;
+        border-radius: 8px;
+        background: white;
+        transition: all 0.3s ease;
+    }
+
+    .emd-digit-input:focus {
+        border-color: var(--campayo-primary);
+        outline: none;
+        box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        transform: scale(1.05);
+    }
+
+    .emd-digit-input.correct {
+        border-color: var(--campayo-success);
+        background-color: rgba(25, 135, 84, 0.1);
+    }
+
+    .emd-digit-input.incorrect {
+        border-color: var(--campayo-danger);
+        background-color: rgba(220, 53, 69, 0.1);
+        animation: shake 0.5s ease-in-out;
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+
+    /* Progreso visual */
+    .emd-progress-bar {
+        width: 100%;
+        height: 6px;
+        background: #e9ecef;
+        border-radius: 3px;
+        overflow: hidden;
+        margin: 1rem 0;
+    }
+
+    .emd-progress-fill {
+        height: 100%;
+        background: var(--campayo-primary);
+        border-radius: 3px;
+        transition: width 0.3s ease;
+    }
+
+    /* Controles específicos */
+    .emd-controls {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 1rem 0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .emd-stats {
+        display: flex;
+        justify-content: space-around;
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+
+    .emd-stat {
+        flex: 1;
+    }
+
+    .emd-stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--campayo-primary);
+    }
+
+    .emd-stat-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    /* Configuración */
+    .emd-config {
+        
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 1rem 0;
+    }
+
+    .config-slider {
+        width: 100%;
+        margin: 0.5rem 0;
+    }
+
+    /* Resultados */
+    .emd-results {
+        background: white;
+        border-radius: 8px;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .accuracy-display {
+        font-size: 3rem;
+        font-weight: bold;
+        margin: 1rem 0;
+    }
+
+    .digit-comparison {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        margin: 2rem 0;
+        font-family: 'Courier New', monospace;
+        font-size: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .original-digits {
+        color: var(--campayo-primary);
+        font-weight: bold;
+    }
+
+    .user-digits {
+        color: #6c757d;
+    }
+
+    .digit-match {
+        color: var(--campayo-success);
+        background: rgba(25, 135, 84, 0.1);
+        padding: 0.25rem;
+        border-radius: 4px;
+    }
+
+    .digit-mismatch {
+        color: var(--campayo-danger);
+        background: rgba(220, 53, 69, 0.1);
+        padding: 0.25rem;
+        border-radius: 4px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .emd-number-display {
+            font-size: 3rem;
+            letter-spacing: 0.5rem;
+        }
+        
+        .emd-number-display.large {
+            font-size: 3.5rem;
+            letter-spacing: 0.75rem;
+        }
+        
+        .emd-digit-input {
+            width: 50px;
+            height: 70px;
+            font-size: 1.75rem;
+        }
+        
+        .emd-countdown-number {
+            font-size: 4rem;
+        }
+        
+        .digit-comparison {
+            font-size: 1.25rem;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .emd-content {
+            padding: 1rem;
+        }
+        
+        .emd-number-display {
+            font-size: 2.5rem;
+            letter-spacing: 0.25rem;
+        }
+        
+        .emd-digit-input {
+            width: 45px;
+            height: 60px;
+            font-size: 1.5rem;
+        }
+        
+        .emd-input-group {
+            gap: 0.25rem;
+        }
+        
+        .emd-stats {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <!-- Header del Ejercicio -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h1 class="h4 fw-bold mb-1">
+                            <i class="bi bi-camera me-2"></i>{{ ejercicio.codigo }} - Memoria Eidética
+                        </h1>
+                        <p class="text-muted small mb-0">{{ ejercicio.descripcion }}</p>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-primary">Nivel {{ ejercicio.nivel }}</span>
+                        {% if ejercicio.requiere_pro %}
+                        <span class="badge bg-warning text-dark">Pro</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-danger">{{ ejercicio.categoria.nombre }}</span>
+                    <a href="{% url 'ejercicios:lista' %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instrucciones -->
+        <div class="card mb-4" id="instructions-card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i> Instrucciones del Ejercicio
+                </h6>
+            </div>
+            <div class="card-body">
+                <div id="emd-instructions">
+                    <h6>Entrenamiento de Memoria Eidética</h6>
+                    <p>Este ejercicio desarrolla tu memoria fotográfica mediante la memorización de secuencias numéricas.</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6 class="small fw-bold">Cómo funciona:</h6>
+                            <ul class="small">
+                                <li>Aparecerá una secuencia de números por un tiempo breve</li>
+                                <li>Memoriza la secuencia completa como una imagen mental</li>
+                                <li>Después reproduce la secuencia exacta</li>
+                                <li>El orden y todos los dígitos deben ser correctos</li>
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="small fw-bold">Técnicas recomendadas:</h6>
+                            <ul class="small">
+                                <li>Visualiza los números como una fotografía</li>
+                                <li>No trates de memorizar uno por uno</li>
+                                <li>Captura la imagen completa de una vez</li>
+                                <li>Practica con relajación y concentración</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Configuración -->
+                <div class="emd-config">
+                    <h6 class="small fw-bold mb-3">Configuración del Ejercicio:</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small">Cantidad de dígitos</label>
+                            <input type="range" class="config-slider" id="digits-slider" 
+                                   min="2" max="8" value="{{ cantidad_digitos|default:4 }}" step="1">
+                            <div class="small text-muted text-center">
+                                <span id="digits-value">{{ cantidad_digitos|default:4 }}</span> dígitos
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Tiempo de visualización (ms)</label>
+                            <input type="range" class="config-slider" id="display-time-slider" 
+                                   min="300" max="2000" value="{{ tiempo_display|default:800 }}" step="100">
+                            <div class="small text-muted text-center">
+                                <span id="display-time-value">{{ tiempo_display|default:800 }}</span> ms
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-3 mt-2">
+                        <div class="col-md-6">
+                            <label class="form-label small">Secuencias a practicar</label>
+                            <input type="range" class="config-slider" id="sequences-slider" 
+                                   min="5" max="20" value="10" step="1">
+                            <div class="small text-muted text-center">
+                                <span id="sequences-value">10</span> secuencias
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Dificultad</label>
+                            <select class="form-select" id="difficulty-select">
+                                <option value="easy">Fácil (números únicos)</option>
+                                <option value="normal" selected>Normal (números aleatorios)</option>
+                                <option value="hard">Difícil (patrones complejos)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <button id="start-emd-exercise" class="btn btn-primary btn-lg">
+                        <i class="bi bi-play"></i> Comenzar Entrenamiento
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Área de Display del Ejercicio -->
+        <div class="emd-display-area" id="emd-display-area" style="display: none;">
+            <div class="emd-content" id="emd-content">
+                <!-- El contenido se generará dinámicamente -->
+            </div>
+            <div class="emd-countdown" id="emd-countdown" style="display: none;">
+                <div class="emd-countdown-number" id="countdown-number">3</div>
+                <div class="emd-countdown-text">Prepárate...</div>
+            </div>
+        </div>
+
+        <!-- Progreso -->
+        <div id="emd-progress-container" style="display: none;">
+            <div class="emd-progress-bar">
+                <div class="emd-progress-fill" id="emd-progress-fill" style="width: 0%;"></div>
+            </div>
+            <div class="text-center small text-muted">
+                Secuencia <span id="current-sequence">1</span> de <span id="total-sequences">10</span>
+            </div>
+        </div>
+
+        <!-- Controles -->
+        <div class="emd-controls" id="emd-controls" style="display: none;">
+            <div class="emd-stats">
+                <div class="emd-stat">
+                    <div class="emd-stat-value" id="correct-sequences">0</div>
+                    <div class="emd-stat-label">Secuencias correctas</div>
+                </div>
+                <div class="emd-stat">
+                    <div class="emd-stat-value" id="current-digits">0</div>
+                    <div class="emd-stat-label">Dígitos actuales</div>
+                </div>
+                <div class="emd-stat">
+                    <div class="emd-stat-value" id="emd-timer">00:00</div>
+                    <div class="emd-stat-label">Tiempo</div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <button id="complete-emd" class="btn btn-success">
+                            <i class="bi bi-check"></i> Finalizar Ejercicio
+                        </button>
+                        <button id="stop-emd" class="btn btn-danger">
+                            <i class="bi bi-stop"></i> Salir
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Configuración simplificada
+const EMD = {
+    ejercicioId: {{ ejercicio.id }},
+    cantidadDigitos: {{ cantidad_digitos|default:4 }},
+    tiempoDisplay: {{ tiempo_display|default:800 }},
+    totalSecuencias: 10,
+    dificultad: 'normal',
+    
+    // Estado
+    iniciado: false,
+    secuenciaActual: 0,
+    secuenciasCorrectas: 0,
+    tiempoInicio: null,
+    secuencias: [],
+    numeroActual: '',
+    respuestaUsuario: ''
+};
+
+// Elementos DOM
+const $ = id => document.getElementById(id);
+const instrucciones = $('instructions-card');
+const pantallaEjercicio = $('emd-display-area');
+const contenido = $('emd-content');
+const countdown = $('emd-countdown');
+const progreso = $('emd-progress-container');
+const controles = $('emd-controls');
+const timer = $('emd-timer');
+
+// Generar secuencia según dificultad
+const generarSecuencia = () => {
+    let secuencia = '';
+    
+    switch(EMD.dificultad) {
+        case 'easy':
+            // Números únicos
+            const unicos = [];
+            while (unicos.length < EMD.cantidadDigitos) {
+                const digito = Math.floor(Math.random() * 10);
+                if (!unicos.includes(digito)) unicos.push(digito);
+            }
+            secuencia = unicos.join('');
+            break;
+            
+        case 'normal':
+            // Completamente aleatorio
+            for (let i = 0; i < EMD.cantidadDigitos; i++) {
+                secuencia += Math.floor(Math.random() * 10);
+            }
+            break;
+            
+        case 'hard':
+            // Con patrones
+            const patrones = ['1122', '1212', '1234', '4321'];
+            if (EMD.cantidadDigitos <= 4) {
+                secuencia = patrones[Math.floor(Math.random() * patrones.length)]
+                    .substring(0, EMD.cantidadDigitos);
+            } else {
+                for (let i = 0; i < EMD.cantidadDigitos; i++) {
+                    secuencia += Math.floor(Math.random() * 10);
+                }
+            }
+            break;
+    }
+    
+    return secuencia;
+};
+
+// Mostrar números
+const mostrarNumeros = () => {
+    EMD.numeroActual = EMD.secuencias[EMD.secuenciaActual];
+    const tamano = EMD.cantidadDigitos <= 3 ? 'large' : 
+                   EMD.cantidadDigitos <= 5 ? 'medium' : 'small';
+    
+    contenido.innerHTML = `
+        <div class="emd-number-display ${tamano}">
+            ${EMD.numeroActual.split('').join(' ')}
+        </div>`;
+    
+    setTimeout(mostrarInputs, EMD.tiempoDisplay);
+};
+
+// Mostrar inputs para respuesta
+const mostrarInputs = () => {
+    const inputsHTML = Array.from({length: EMD.cantidadDigitos}, (_, i) => 
+        `<input type="text" class="emd-digit-input" id="digit-${i}" maxlength="1" autocomplete="off">`
+    ).join('');
+    
+    contenido.innerHTML = `
+        <div class="emd-recall">
+            <div class="emd-recall-title">Reproduce la secuencia:</div>
+            <div class="emd-input-group">${inputsHTML}</div>
+            <button class="btn btn-primary btn-lg" onclick="verificarSecuencia()">Verificar</button>
+        </div>`;
+    
+    configurarInputs();
+};
+
+// Configurar navegación entre inputs
+const configurarInputs = () => {
+    for (let i = 0; i < EMD.cantidadDigitos; i++) {
+        const input = $(`digit-${i}`);
+        
+        input.oninput = (e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+            if (e.target.value && i < EMD.cantidadDigitos - 1) {
+                $(`digit-${i + 1}`).focus();
+            }
+        };
+        
+        input.onkeydown = (e) => {
+            if (e.key === 'Backspace' && !e.target.value && i > 0) {
+                $(`digit-${i - 1}`).focus();
+            }
+            if (e.key === 'Enter' && i === EMD.cantidadDigitos - 1) {
+                verificarSecuencia();
+            }
+        };
+    }
+    
+    $('digit-0').focus();
+};
+
+// Verificar secuencia ingresada
+const verificarSecuencia = () => {
+    EMD.respuestaUsuario = '';
+    let todosLlenos = true;
+    
+    for (let i = 0; i < EMD.cantidadDigitos; i++) {
+        const input = $(`digit-${i}`);
+        if (!input.value) {
+            todosLlenos = false;
+            input.classList.add('incorrect');
+            setTimeout(() => input.classList.remove('incorrect'), 500);
+        } else {
+            EMD.respuestaUsuario += input.value;
+        }
+    }
+    
+    if (!todosLlenos) return;
+    
+    const correcto = EMD.respuestaUsuario === EMD.numeroActual;
+    if (correcto) EMD.secuenciasCorrectas++;
+    
+    mostrarResultadoSecuencia(correcto);
+    
+    setTimeout(() => {
+        EMD.secuenciaActual++;
+        actualizarProgreso();
+        
+        if (EMD.secuenciaActual >= EMD.totalSecuencias) {
+            completarEjercicio();
+        } else {
+            mostrarNumeros();
+        }
+    }, 2000);
+};
+
+// Mostrar resultado de secuencia individual
+const mostrarResultadoSecuencia = (correcto) => {
+    const icono = correcto ? 'bi-check-circle text-success' : 'bi-x-circle text-danger';
+    const texto = correcto ? '¡Correcto!' : 'Incorrecto';
+    const clase = correcto ? 'text-success' : 'text-danger';
+    
+    contenido.innerHTML = `
+        <div class="text-center">
+            <i class="${icono}" style="font-size: 4rem;"></i>
+            <h3 class="mt-3 ${clase}">${texto}</h3>
+            <div class="digit-comparison">
+                <div>Original: <span class="original-digits">${EMD.numeroActual.split('').join(' ')}</span></div>
+                <div>Tu respuesta: <span class="user-digits">${EMD.respuestaUsuario.split('').join(' ')}</span></div>
+            </div>
+        </div>`;
+};
+
+// Actualizar progreso
+const actualizarProgreso = () => {
+    const porcentaje = ((EMD.secuenciaActual + 1) / EMD.totalSecuencias) * 100;
+    $('emd-progress-fill').style.width = `${porcentaje}%`;
+    $('current-sequence').textContent = EMD.secuenciaActual + 1;
+    $('correct-sequences').textContent = EMD.secuenciasCorrectas;
+};
+
+// Countdown inicial
+const iniciarCountdown = () => {
+    countdown.style.display = 'flex';
+    let cuenta = 3;
+    $('countdown-number').textContent = cuenta;
+    
+    const intervalo = setInterval(() => {
+        cuenta--;
+        if (cuenta > 0) {
+            $('countdown-number').textContent = cuenta;
+        } else {
+            clearInterval(intervalo);
+            countdown.style.display = 'none';
+            mostrarNumeros();
+        }
+    }, 1000);
+};
+
+// Actualizar timer
+const actualizarTimer = () => {
+    if (!EMD.tiempoInicio) return;
+    
+    const transcurrido = Date.now() - EMD.tiempoInicio;
+    const minutos = Math.floor(transcurrido / 60000);
+    const segundos = Math.floor((transcurrido % 60000) / 1000);
+    timer.textContent = `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+};
+
+// Iniciar ejercicio
+const iniciar = () => {
+    if (EMD.iniciado) return;
+    
+    // Generar secuencias
+    EMD.secuencias = [];
+    for (let i = 0; i < EMD.totalSecuencias; i++) {
+        EMD.secuencias.push(generarSecuencia());
+    }
+    
+    EMD.tiempoInicio = Date.now();
+    EMD.iniciado = true;
+    EMD.secuenciaActual = 0;
+    EMD.secuenciasCorrectas = 0;
+    
+    // UI
+    instrucciones.style.display = 'none';
+    pantallaEjercicio.style.display = 'block';
+    progreso.style.display = 'block';
+    controles.style.display = 'block';
+    
+    // Setup
+    $('total-sequences').textContent = EMD.totalSecuencias;
+    $('current-digits').textContent = EMD.cantidadDigitos;
+    setInterval(actualizarTimer, 100);
+    iniciarCountdown();
+};
+
+// Completar ejercicio
+const completar = () => {
+    const tiempo = Date.now() - EMD.tiempoInicio;
+    const precision = Math.round((EMD.secuenciasCorrectas / EMD.totalSecuencias) * 100);
+    
+    // Marcar como completado
+    fetch('{% url "ejercicios:completar" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: `ejercicio_id=${EMD.ejercicioId}&tiempo_ms=${tiempo}`
+    });
+    
+    // Mostrar resultados
+    const minutos = Math.floor(tiempo / 60000);
+    const segundos = Math.floor((tiempo % 60000) / 1000);
+    const colorPrecision = precision >= 80 ? 'success' : 
+                          precision >= 60 ? 'warning' : 'danger';
+    
+    contenido.innerHTML = `
+        <div class="text-center">
+            <i class="bi bi-check-circle text-success" style="font-size: 4rem;"></i>
+            <h3 class="mt-3 text-success">¡Ejercicio Completado!</h3>
+            
+            <div class="emd-results mt-4">
+                <div class="accuracy-display text-${colorPrecision}">${precision}% de precisión</div>
+                <div class="row text-center">
+                    <div class="col-3">
+                        <div class="h5 text-success">${EMD.secuenciasCorrectas}</div>
+                        <div class="small text-muted">Correctas</div>
+                    </div>
+                    <div class="col-3">
+                        <div class="h5 text-primary">${EMD.totalSecuencias}</div>
+                        <div class="small text-muted">Total</div>
+                    </div>
+                    <div class="col-3">
+                        <div class="h5 text-info">${EMD.cantidadDigitos}</div>
+                        <div class="small text-muted">Dígitos</div>
+                    </div>
+                    <div class="col-3">
+                        <div class="h5 text-secondary">${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}</div>
+                        <div class="small text-muted">Tiempo</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <a href="{% url 'ejercicios:lista' %}" class="btn btn-primary me-2">Ver Ejercicios</a>
+                <button onclick="location.reload()" class="btn btn-outline-primary">Repetir</button>
+            </div>
+        </div>`;
+    
+    progreso.style.display = 'none';
+    controles.style.display = 'none';
+};
+
+// Completar ejercicio (llamada desde botón)
+const completarEjercicio = () => {
+    if (EMD.secuenciaActual >= EMD.totalSecuencias) {
+        completar();
+    } else {
+        completar(); // Permitir completar antes de tiempo
+    }
+};
+
+// Salir
+const salir = () => {
+    if (confirm('¿Salir del ejercicio?')) {
+        location.href = '{% url "ejercicios:lista" %}';
+    }
+};
+
+// Función global para verificar (llamada desde HTML)
+window.verificarSecuencia = verificarSecuencia;
+
+// Event listeners
+document.addEventListener('DOMContentLoaded', () => {
+    $('start-emd-exercise').onclick = iniciar;
+    $('complete-emd').onclick = completarEjercicio;
+    $('stop-emd').onclick = salir;
+    
+    // Configuración
+    $('digits-slider').oninput = (e) => {
+        EMD.cantidadDigitos = parseInt(e.target.value);
+        $('digits-value').textContent = EMD.cantidadDigitos;
+        $('current-digits').textContent = EMD.cantidadDigitos;
+    };
+    
+    $('display-time-slider').oninput = (e) => {
+        EMD.tiempoDisplay = parseInt(e.target.value);
+        $('display-time-value').textContent = EMD.tiempoDisplay;
+    };
+    
+    $('sequences-slider').oninput = (e) => {
+        EMD.totalSecuencias = parseInt(e.target.value);
+        $('sequences-value').textContent = EMD.totalSecuencias;
+    };
+    
+    $('difficulty-select').onchange = (e) => {
+        EMD.dificultad = e.target.value;
+    };
+});
+</script>
+{% endblock %}

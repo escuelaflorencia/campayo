@@ -1,0 +1,413 @@
+{% extends 'base.html' %}
+
+{% block title %}Editar Perfil - TSR{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <div class="auth-icon">
+                    <i class="bi bi-person-gear"></i>
+                </div>
+                <h1>Editar Perfil</h1>
+                <p class="auth-subtitle">Actualiza tu información personal</p>
+            </div>
+
+            <form method="post" class="auth-form" novalidate>
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                    <div class="form-error-global">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        {{ form.non_field_errors|first }}
+                    </div>
+                {% endif %}
+                
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="{{ form.nombre.id_for_label }}" class="form-label">
+                            <i class="bi bi-person"></i>
+                            Nombre
+                        </label>
+                        {{ form.nombre }}
+                        {% if form.nombre.errors %}
+                            <div class="field-error">
+                                {{ form.nombre.errors|first }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="form-field">
+                        <label for="{{ form.apellidos.id_for_label }}" class="form-label">
+                            <i class="bi bi-person"></i>
+                            Apellidos
+                        </label>
+                        {{ form.apellidos }}
+                        {% if form.apellidos.errors %}
+                            <div class="field-error">
+                                {{ form.apellidos.errors|first }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-field">
+                    <label for="{{ form.email.id_for_label }}" class="form-label">
+                        <i class="bi bi-envelope"></i>
+                        Email
+                    </label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <div class="field-error">
+                            {{ form.email.errors|first }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="plan-info">
+                    <div class="plan-icon">
+                        <i class="bi bi-{% if user.es_pro %}star{% else %}person{% endif %}"></i>
+                    </div>
+                    <div class="plan-details">
+                        <div class="plan-title">Plan Actual: {{ user.get_plan_display }}</div>
+                        <div class="plan-description">
+                            {% if user.es_pro %}
+                                Acceso completo a todos los niveles de entrenamiento
+                            {% else %}
+                                Acceso a niveles 1-3 de entrenamiento
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="plan-badge {% if user.es_pro %}pro{% else %}free{% endif %}">
+                        {% if user.es_pro %}Pro{% else %}Gratuito{% endif %}
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit">
+                        <i class="bi bi-check-circle"></i>
+                        Guardar Cambios
+                    </button>
+                    <a href="{% url 'usuarios:dashboard' %}" class="btn-cancel">
+                        <i class="bi bi-arrow-left"></i>
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <div class="auth-footer">
+            <div class="quick-actions">
+                <a href="{% url 'usuarios:cambiar_password' %}" class="action-btn">
+                    <i class="bi bi-key"></i>
+                    Cambiar Contraseña
+                </a>
+                <a href="{% url 'usuarios:dashboard' %}" class="action-btn">
+                    <i class="bi bi-house"></i>
+                    Volver al Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Auth Page Layout */
+.auth-page {
+    min-height: calc(100vh - 120px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-lg) var(--space-md);
+}
+
+.auth-container {
+    width: 100%;
+    max-width: 500px;
+}
+
+/* Auth Card */
+.auth-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-2xl) var(--space-xl);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border);
+    margin-bottom: var(--space-lg);
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: var(--space-2xl);
+}
+
+.auth-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    margin: 0 auto var(--space-lg);
+}
+
+.auth-header h1 {
+    margin-bottom: var(--space-sm);
+    font-size: 1.75rem;
+}
+
+.auth-subtitle {
+    color: var(--text-muted);
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* Form */
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+}
+
+.form-error-global {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+    background: rgba(231, 111, 81, 0.1);
+    border: 1px solid var(--danger);
+    border-radius: var(--radius-md);
+    color: #721c24;
+    font-size: 0.875rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+}
+
+.form-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-weight: 600;
+    color: var(--text);
+    font-size: 0.875rem;
+}
+
+.form-label i {
+    color: var(--primary);
+    font-size: 1rem;
+}
+
+.form-field input {
+    width: 100%;
+    padding: var(--space-md) var(--space-lg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    background: var(--bg-card);
+    color: var(--text);
+    transition: var(--transition);
+}
+
+.form-field input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(74, 124, 89, 0.1);
+}
+
+.field-error {
+    color: var(--danger);
+    font-size: 0.875rem;
+    margin-top: -var(--space-xs);
+}
+
+/* Plan Info */
+.plan-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+    background: var(--bg);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+}
+
+.plan-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--primary);
+    color: white;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.plan-details {
+    flex: 1;
+}
+
+.plan-title {
+    font-weight: 600;
+    margin-bottom: var(--space-xs);
+}
+
+.plan-description {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.plan-badge {
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-full);
+    font-size: 0.875rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.plan-badge.pro {
+    background: var(--success);
+    color: white;
+}
+
+.plan-badge.free {
+    background: var(--text-muted);
+    color: white;
+}
+
+/* Form Actions */
+.form-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+    margin-top: var(--space-lg);
+}
+
+.btn-submit,
+.btn-cancel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-lg);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: var(--transition);
+    min-height: 52px;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-submit {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-submit:hover {
+    background: var(--primary-dark);
+}
+
+.btn-cancel {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+}
+
+.btn-cancel:hover {
+    background: var(--border);
+    color: var(--text);
+}
+
+/* Auth Footer */
+.auth-footer {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-xl);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+}
+
+.quick-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-lg);
+    background: none;
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    text-decoration: none;
+    transition: var(--transition);
+    min-height: 48px;
+}
+
+.action-btn:hover {
+    background: var(--primary);
+    color: white;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .form-actions {
+        grid-template-columns: 1fr;
+    }
+    
+    .quick-actions {
+        grid-template-columns: 1fr;
+    }
+    
+    .plan-info {
+        flex-direction: column;
+        text-align: center;
+        gap: var(--space-sm);
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-page {
+        padding: var(--space-md) var(--space-sm);
+    }
+    
+    .auth-card {
+        padding: var(--space-xl) var(--space-lg);
+    }
+    
+    .auth-icon {
+        width: 70px;
+        height: 70px;
+        font-size: 2rem;
+    }
+}
+</style>
+{% endblock %}

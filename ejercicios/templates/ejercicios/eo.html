@@ -1,0 +1,568 @@
+{% extends 'ejercicios_base.html' %}
+
+{% block title %}{{ ejercicio.codigo }} - Entrenamiento del Ojo - Campayo{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Estilos específicos para EO */
+    .eo-display-area {
+        
+        border-radius: 12px;
+        min-height: 350px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+        margin: 1rem 0;
+    }
+
+    .eo-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        gap: 20px;
+        width: 300px;
+        height: 300px;
+        position: relative;
+    }
+
+    .eo-position {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    /* Elementos de display */
+    .eo-circle {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: var(--campayo-primary);
+        box-shadow: 0 4px 12px rgba(13, 110, 253, 0.3);
+        animation: pulse 1.5s infinite;
+    }
+
+    .eo-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: var(--campayo-primary);
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .eo-word {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--campayo-primary);
+        background: rgba(13, 110, 253, 0.1);
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        text-align: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .eo-word-pair {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--campayo-primary);
+        background: rgba(13, 110, 253, 0.1);
+        padding: 0.75rem;
+        border-radius: 6px;
+        text-align: center;
+        max-width: 120px;
+        line-height: 1.2;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    /* Animaciones */
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.8); }
+        to { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes fadeOut {
+        from { opacity: 1; transform: scale(1); }
+        to { opacity: 0; transform: scale(0.8); }
+    }
+
+    .eo-item-enter {
+        animation: fadeIn 0.3s ease-out;
+    }
+
+    .eo-item-exit {
+        animation: fadeOut 0.3s ease-in;
+    }
+
+    /* Countdown overlay */
+    .eo-countdown {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.95);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+        border-radius: 12px;
+    }
+
+    .eo-countdown-number {
+        font-size: 5rem;
+        font-weight: bold;
+        color: var(--campayo-primary);
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        animation: pulse 1s infinite;
+    }
+
+    /* Controles específicos */
+    .eo-controls {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 1rem 0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .eo-stats {
+        display: flex;
+        justify-content: space-around;
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+
+    .eo-stat {
+        flex: 1;
+    }
+
+    .eo-stat-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--campayo-primary);
+    }
+
+    .eo-stat-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+
+    /* Configuración */
+    .config-slider {
+        width: 100%;
+        margin: 0.5rem 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .eo-grid {
+            width: 250px;
+            height: 250px;
+            gap: 15px;
+        }
+        
+        .eo-circle {
+            width: 45px;
+            height: 45px;
+        }
+        
+        .eo-number {
+            font-size: 2rem;
+        }
+        
+        .eo-word {
+            font-size: 1.25rem;
+            padding: 0.375rem 0.75rem;
+        }
+        
+        .eo-word-pair {
+            font-size: 1rem;
+            padding: 0.5rem;
+            max-width: 100px;
+        }
+        
+        .eo-countdown-number {
+            font-size: 4rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .eo-grid {
+            width: 200px;
+            height: 200px;
+            gap: 10px;
+        }
+        
+        .eo-circle {
+            width: 35px;
+            height: 35px;
+        }
+        
+        .eo-number {
+            font-size: 1.5rem;
+        }
+        
+        .eo-word {
+            font-size: 1rem;
+            padding: 0.25rem 0.5rem;
+        }
+        
+        .eo-word-pair {
+            font-size: 0.875rem;
+            padding: 0.375rem;
+            max-width: 80px;
+        }
+        
+        .eo-stats {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <!-- Header del Ejercicio -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h1 class="h4 fw-bold mb-1">
+                            <i class="bi bi-eye me-2"></i>{{ ejercicio.codigo }} - Entrenamiento del Ojo
+                        </h1>
+                        <p class="text-muted small mb-0">{{ ejercicio.descripcion }}</p>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-primary">Nivel {{ ejercicio.nivel }}</span>
+                        {% if ejercicio.requiere_pro %}
+                        <span class="badge bg-warning text-dark">Pro</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-warning">{{ ejercicio.categoria.nombre }}</span>
+                    <a href="{% url 'ejercicios:lista' %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instrucciones -->
+        <div class="card mb-4" id="instructions-card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i> Instrucciones del Ejercicio
+                </h6>
+            </div>
+            <div class="card-body">
+                <div id="eo-instructions">
+                    <!-- Las instrucciones se cargarán dinámicamente -->
+                </div>
+                
+                <!-- Configuración Rápida -->
+                <div class="mt-3" id="eo-config">
+                    <h6 class="small fw-bold">Configuración:</h6>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small">Velocidad de Display (ms)</label>
+                            <input type="range" class="config-slider" id="speed-slider" 
+                                   min="500" max="3000" value="{{ tiempo_display|default:1000 }}" step="100">
+                            <div class="small text-muted text-center">
+                                <span id="speed-value">{{ tiempo_display|default:1000 }}</span> ms
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">Posiciones Activas</label>
+                            <input type="range" class="config-slider" id="positions-slider" 
+                                   min="3" max="9" value="{{ posiciones|default:9 }}" step="1">
+                            <div class="small text-muted text-center">
+                                <span id="positions-value">{{ posiciones|default:9 }}</span> posiciones
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-4">
+                    <button id="start-eo-exercise" class="btn btn-primary btn-lg">
+                        <i class="bi bi-play"></i> Comenzar Entrenamiento
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Área de Display del Ejercicio -->
+        <div class="eo-display-area" id="eo-display-area" style="display: none;">
+            <div class="eo-grid" id="eo-grid">
+                <!-- Las 9 posiciones se generarán dinámicamente -->
+            </div>
+            <div class="eo-countdown" id="eo-countdown" style="display: none;">
+                <div class="eo-countdown-number" id="countdown-number">3</div>
+            </div>
+        </div>
+
+        <!-- Controles y Estadísticas -->
+        <div class="eo-controls" id="eo-controls" style="display: none;">
+            <!-- Estadísticas en tiempo real -->
+            <div class="eo-stats">
+                <div class="eo-stat">
+                    <div class="eo-stat-value" id="items-shown">0</div>
+                    <div class="eo-stat-label">Elementos mostrados</div>
+                </div>
+                <div class="eo-stat">
+                    <div class="eo-stat-value" id="current-speed">0</div>
+                    <div class="eo-stat-label">Velocidad (ms)</div>
+                </div>
+                <div class="eo-stat">
+                    <div class="eo-stat-value" id="eo-timer">00:00</div>
+                    <div class="eo-stat-label">Tiempo</div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-12">
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <button id="pause-eo" class="btn btn-warning">
+                            <i class="bi bi-pause"></i> Pausar
+                        </button>
+                        <button id="complete-eo" class="btn btn-success">
+                            <i class="bi bi-check"></i> Completar
+                        </button>
+                        <button id="stop-eo" class="btn btn-danger">
+                            <i class="bi bi-stop"></i> Salir
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Configuración simplificada
+const EO = {
+    ejercicioId: {{ ejercicio.id }},
+    tipo: '{{ tipo_objeto|default:"circle" }}',
+    velocidad: {{ tiempo_display|default:1000 }},
+    duracion: 30000, // 30 segundos
+    
+    // Estado
+    iniciado: false,
+    pausado: false,
+    completado: false,
+    tiempoInicio: null,
+    intervalo: null,
+    contador: 0
+};
+
+// Elementos DOM
+const $ = id => document.getElementById(id);
+const instrucciones = $('instructions-card');
+const pantallaEjercicio = $('eo-display-area');
+const rejilla = $('eo-grid');
+const controles = $('eo-controls');
+const countdown = $('eo-countdown');
+const timer = $('eo-timer');
+const velocidadSlider = $('speed-slider');
+const velocidadValue = $('speed-value');
+
+// Datos por tipo
+const obtenerContenido = () => {
+    switch(EO.tipo) {
+        case 'circle':
+            return '<div class="eo-circle"></div>';
+        case 'number':
+            return `<div class="eo-number">${Math.floor(Math.random() * 10)}</div>`;
+        case 'word':
+            const palabras = ['casa', 'mesa', 'libro', 'agua', 'sol', 'día', 'alto', 'rápido'];
+            return `<div class="eo-word">${palabras[Math.floor(Math.random() * palabras.length)]}</div>`;
+        case 'word_pair':
+            const pares = ['casa mesa', 'sol luna', 'día noche', 'alto bajo'];
+            return `<div class="eo-word-pair">${pares[Math.floor(Math.random() * pares.length)]}</div>`;
+    }
+};
+
+// Crear rejilla 3x3
+const crearRejilla = () => {
+    rejilla.innerHTML = '';
+    for(let i = 0; i < 9; i++) {
+        const pos = document.createElement('div');
+        pos.className = 'eo-position';
+        pos.id = `pos-${i}`;
+        rejilla.appendChild(pos);
+    }
+};
+
+// Mostrar elemento en posición aleatoria
+const mostrarElemento = () => {
+    if (EO.pausado || EO.completado) return;
+    
+    // Limpiar posiciones
+    for(let i = 0; i < 9; i++) {
+        $(`pos-${i}`).innerHTML = '';
+    }
+    
+    // Mostrar en posición aleatoria
+    const posicion = Math.floor(Math.random() * 9);
+    $(`pos-${posicion}`).innerHTML = obtenerContenido();
+    
+    EO.contador++;
+    $('items-shown').textContent = EO.contador;
+};
+
+// Secuencia principal
+const ejecutarSecuencia = () => {
+    if (EO.pausado || EO.completado) return;
+    
+    mostrarElemento();
+    EO.intervalo = setTimeout(ejecutarSecuencia, EO.velocidad);
+};
+
+// Countdown inicial
+const iniciarCountdown = () => {
+    countdown.style.display = 'flex';
+    let cuenta = 3;
+    $('countdown-number').textContent = cuenta;
+    
+    const intervaloCountdown = setInterval(() => {
+        cuenta--;
+        if (cuenta > 0) {
+            $('countdown-number').textContent = cuenta;
+        } else {
+            clearInterval(intervaloCountdown);
+            countdown.style.display = 'none';
+            ejecutarSecuencia();
+            
+            // Auto-completar después de la duración
+            setTimeout(() => {
+                if (!EO.completado) completarEjercicio();
+            }, EO.duracion);
+        }
+    }, 1000);
+};
+
+// Actualizar timer
+const actualizarTimer = () => {
+    if (EO.pausado || !EO.tiempoInicio) return;
+    
+    const transcurrido = Date.now() - EO.tiempoInicio;
+    const minutos = Math.floor(transcurrido / 60000);
+    const segundos = Math.floor((transcurrido % 60000) / 1000);
+    timer.textContent = `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+};
+
+// Iniciar ejercicio
+const iniciar = () => {
+    if (EO.iniciado) return;
+    
+    EO.tiempoInicio = Date.now();
+    EO.iniciado = true;
+    EO.contador = 0;
+    
+    // UI
+    instrucciones.style.display = 'none';
+    pantallaEjercicio.style.display = 'block';
+    controles.style.display = 'block';
+    
+    // Setup
+    crearRejilla();
+    setInterval(actualizarTimer, 100);
+    iniciarCountdown();
+};
+
+// Pausar/Continuar
+const pausar = () => {
+    EO.pausado = !EO.pausado;
+    const btn = $('pause-eo');
+    
+    if (EO.pausado) {
+        clearTimeout(EO.intervalo);
+        btn.innerHTML = '<i class="bi bi-play"></i> Continuar';
+        btn.className = 'btn btn-success';
+    } else {
+        btn.innerHTML = '<i class="bi bi-pause"></i> Pausar';
+        btn.className = 'btn btn-warning';
+        ejecutarSecuencia();
+    }
+};
+
+// Completar ejercicio
+const completarEjercicio = () => {
+    if (EO.completado) return;
+    
+    EO.completado = true;
+    clearTimeout(EO.intervalo);
+    
+    const tiempo = Date.now() - EO.tiempoInicio;
+    
+    // Marcar como completado
+    fetch('{% url "ejercicios:completar" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: `ejercicio_id=${EO.ejercicioId}&tiempo_ms=${tiempo}`
+    });
+    
+    // Mostrar éxito
+    const minutos = Math.floor(tiempo / 60000);
+    const segundos = Math.floor((tiempo % 60000) / 1000);
+    
+    rejilla.innerHTML = `
+        <div style="grid-column: 1 / -1; grid-row: 1 / -1; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+            <i class="bi bi-check-circle text-success" style="font-size: 4rem;"></i>
+            <h3 class="mt-3 text-success">¡Ejercicio Completado!</h3>
+            <p class="text-muted">Has procesado ${EO.contador} elementos</p>
+            <div class="h4 text-primary mt-3">${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}</div>
+            <div class="mt-4">
+                <a href="{% url 'ejercicios:lista' %}" class="btn btn-primary me-2">Ver Ejercicios</a>
+                <button onclick="location.reload()" class="btn btn-outline-primary">Repetir</button>
+            </div>
+        </div>`;
+    
+    controles.style.display = 'none';
+};
+
+// Salir
+const salir = () => {
+    if (confirm('¿Salir del ejercicio?')) {
+        clearTimeout(EO.intervalo);
+        location.href = '{% url "ejercicios:lista" %}';
+    }
+};
+
+// Event listeners
+document.addEventListener('DOMContentLoaded', () => {
+    // Controles principales
+    $('start-eo-exercise').onclick = iniciar;
+    $('pause-eo').onclick = pausar;
+    $('complete-eo').onclick = completarEjercicio;
+    $('stop-eo').onclick = salir;
+    
+    // Configuración velocidad
+    velocidadSlider.oninput = () => {
+        EO.velocidad = parseInt(velocidadSlider.value);
+        velocidadValue.textContent = EO.velocidad;
+        $('current-speed').textContent = EO.velocidad;
+    };
+    
+    // Inicializar valores
+    $('current-speed').textContent = EO.velocidad;
+});
+</script>
+{% endblock %}

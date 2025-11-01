@@ -1,0 +1,490 @@
+{% extends 'ejercicios_base.html' %}
+
+{% block title %}{{ ejercicio.codigo }} - Entrenamiento de Lectura - Campayo{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Estilos específicos para EL */
+    .el-display-area {
+        
+        border-radius: 12px;
+        min-height: 300px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+        margin: 1rem 0;
+    }
+
+    .el-content {
+        text-align: center;
+        transition: all 0.3s ease;
+        width: 100%;
+        padding: 2rem;
+    }
+
+    /* Subtipo 1 y 2: Pares de palabras */
+    .pair-display {
+        font-size: 3rem;
+        font-weight: bold;
+        color: var(--campayo-primary);
+        font-family: 'Courier New', monospace;
+        letter-spacing: 1rem;
+        line-height: 1.2;
+    }
+
+    /* Subtipo 3 y 4: Frases */
+    .phrase-display {
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--campayo-primary);
+        line-height: 1.4;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    /* Subtipo 5 y 6: Columnas */
+    .column-display {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        height: 250px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .column-line {
+        font-size: 1.25rem;
+        margin: 0.25rem 0;
+        padding: 0.25rem 1rem;
+        transition: all 0.3s ease;
+        border-radius: 6px;
+    }
+
+    .column-line.active {
+        background-color: var(--campayo-primary);
+        color: white;
+        transform: scale(1.05);
+    }
+
+    .guide-line {
+        position: absolute;
+        height: 3px;
+        background-color: rgba(13, 110, 253, 0.8);
+        width: 100%;
+        transition: top 0.3s ease;
+        border-radius: 2px;
+    }
+
+    /* Subtipo 7 y 8: Párrafos */
+    .paragraph-display {
+        text-align: left;
+        font-size: 1.1rem;
+        line-height: 1.6;
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 1rem;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .guide-marker {
+        position: absolute;
+        width: 4px;
+        height: 20px;
+        background-color: var(--campayo-primary);
+        border-radius: 2px;
+        transition: all 0.2s ease;
+        z-index: 10;
+    }
+
+    /* Controles específicos */
+    .el-controls {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 1rem 0;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .control-group {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .control-group:last-child {
+        margin-bottom: 0;
+    }
+
+    .control-label {
+        font-weight: 500;
+        color: #6c757d;
+        min-width: 100px;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .pair-display {
+            font-size: 2rem;
+            letter-spacing: 0.5rem;
+        }
+        
+        .phrase-display {
+            font-size: 1.5rem;
+        }
+        
+        .paragraph-display {
+            font-size: 1rem;
+            padding: 0.75rem;
+        }
+        
+        .control-group {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+        
+        .control-label {
+            min-width: auto;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .el-content {
+            padding: 1rem;
+        }
+        
+        .pair-display {
+            font-size: 1.5rem;
+            letter-spacing: 0.25rem;
+        }
+        
+        .phrase-display {
+            font-size: 1.25rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <!-- Header del Ejercicio -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h1 class="h4 fw-bold mb-1">
+                            <i class="bi bi-book me-2"></i>{{ ejercicio.codigo }} - Entrenamiento de Lectura
+                        </h1>
+                        <p class="text-muted small mb-0">{{ ejercicio.descripcion }}</p>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-primary">Nivel {{ ejercicio.nivel }}</span>
+                        {% if ejercicio.requiere_pro %}
+                        <span class="badge bg-warning text-dark">Pro</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge bg-info">{{ ejercicio.categoria.nombre }}</span>
+                    <a href="{% url 'ejercicios:lista' %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Instrucciones Específicas -->
+        <div class="card mb-4" id="instructions-card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="bi bi-info-circle me-2"></i> Instrucciones del Ejercicio
+                </h6>
+            </div>
+            <div class="card-body">
+                <div id="el-instructions">
+                    <!-- Las instrucciones se cargarán dinámicamente según el subtipo -->
+                </div>
+                <div class="text-center mt-3">
+                    <button id="start-el-exercise" class="btn btn-primary btn-lg">
+                        <i class="bi bi-play"></i> Comenzar Entrenamiento
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Área de Display del Ejercicio -->
+        <div class="el-display-area" id="el-display-area" style="display: none;">
+            <div class="el-content" id="el-content">
+                <!-- El contenido se generará dinámicamente -->
+            </div>
+        </div>
+
+        <!-- Controles Específicos del Ejercicio -->
+        <div class="el-controls" id="el-controls" style="display: none;">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <div class="timer-display text-center" id="el-timer">00:00</div>
+                </div>
+                <div class="col-md-6" id="el-specific-controls">
+                    <!-- Controles específicos según subtipo se cargarán aquí -->
+                </div>
+            </div>
+            
+            <div class="row mt-3">
+                <div class="col-12">
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                        <button id="pause-el" class="btn btn-warning">
+                            <i class="bi bi-pause"></i> Pausar
+                        </button>
+                        <button id="complete-el" class="btn btn-success">
+                            <i class="bi bi-check"></i> Completar
+                        </button>
+                        <button id="stop-el" class="btn btn-danger">
+                            <i class="bi bi-stop"></i> Salir
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Configuración (para algunos subtipos) -->
+<div class="modal fade" id="configModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Configuración del Ejercicio</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="config-content">
+                <!-- Contenido de configuración dinámico -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="apply-config">Aplicar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Configuración simplificada
+const EL = {
+    ejercicioId: {{ ejercicio.id }},
+    subtipo: '{{ ejercicio.codigo }}'.slice(-1),
+    tiempoDisplay: {{ tiempo_display|default:1500 }},
+    totalElementos: 20,
+    
+    // Estado
+    iniciado: false,
+    pausado: false,
+    completado: false,
+    elementoActual: 0,
+    tiempoInicio: null,
+    intervalo: null,
+    datos: []
+};
+
+// Elementos DOM
+const $ = id => document.getElementById(id);
+const instrucciones = $('instructions-card');
+const pantallaEjercicio = $('el-display-area');
+const contenido = $('el-content');
+const controles = $('el-controls');
+const timer = $('el-timer');
+
+// Datos por subtipo
+const generarDatos = () => {
+    switch(EL.subtipo) {
+        case '1':
+        case '2':
+            return [
+                'CASA MESA', 'LIBRO PAPEL', 'AGUA FUEGO', 'SOL LUNA', 'DÍA NOCHE',
+                'ALTO BAJO', 'RÁPIDO LENTO', 'GRANDE PEQUEÑO', 'NUEVO VIEJO', 'CALIENTE FRÍO',
+                'FELIZ TRISTE', 'CERCA LEJOS', 'DENTRO FUERA', 'ARRIBA ABAJO', 'ANTES DESPUÉS',
+                'MUCHO POCO', 'FÁCIL DIFÍCIL', 'CLARO OSCURO', 'LLENO VACÍO', 'DULCE AMARGO'
+            ];
+        case '3':
+        case '4':
+            return [
+                'El gato subió al tejado', 'Los niños juegan en el parque', 'La lluvia cae suavemente',
+                'El libro está sobre la mesa', 'Las flores del jardín florecen', 'El viento sopla entre los árboles',
+                'La música suena en la habitación', 'Los pájaros cantan al amanecer', 'El sol brilla en el cielo',
+                'Las nubes se mueven lentamente', 'El perro corre por el campo', 'La mariposa vuela entre las flores',
+                'El río fluye hacia el mar', 'Las estrellas brillan de noche', 'El tren llega a la estación',
+                'Los estudiantes leen en silencio', 'La brisa mueve las hojas', 'El fuego calienta la habitación',
+                'La nieve cubre la montaña', 'El barco navega por el océano'
+            ];
+        case '5':
+        case '6':
+            return [
+                'lectura', 'velocidad', 'comprensión', 'memoria', 'atención', 'concentración',
+                'práctica', 'ejercicio', 'entrenamiento', 'técnica', 'método', 'resultado',
+                'mejora', 'progreso', 'desarrollo', 'habilidad', 'destreza', 'capacidad',
+                'eficiencia', 'rendimiento'
+            ];
+        case '7':
+        case '8':
+            return [
+                'La lectura rápida es una habilidad esencial en el mundo moderno.',
+                'El método Campayo ha demostrado ser efectivo para miles de estudiantes.',
+                'La práctica constante es la clave para desarrollar cualquier destreza.',
+                'Los ejercicios visuales mejoran la agilidad y precisión ocular.',
+                'La memoria se fortalece con técnicas específicas de entrenamiento.',
+                'La concentración se desarrolla gradualmente con ejercicios adecuados.',
+                'Los resultados se notan después de pocas semanas de práctica.',
+                'La comprensión no se sacrifica al aumentar la velocidad de lectura.',
+                'Las técnicas de memorización complementan la lectura rápida.',
+                'El entrenamiento regular produce mejoras significativas y duraderas.'
+            ];
+    }
+};
+
+// Mostrar elemento según subtipo
+const mostrarElemento = (elemento) => {
+    let html = '';
+    const clase = {
+        '1': 'pair-display', '2': 'pair-display',
+        '3': 'phrase-display', '4': 'phrase-display',
+        '5': 'column-display', '6': 'column-display',
+        '7': 'paragraph-display', '8': 'paragraph-display'
+    }[EL.subtipo];
+    
+    if (EL.subtipo <= '2') {
+        // Pares con espaciado
+        html = `<div class="${clase}">${elemento.replace(' ', '&nbsp;&nbsp;&nbsp;&nbsp;')}</div>`;
+    } else if (EL.subtipo <= '6') {
+        // Columnas con guía opcional
+        const guia = EL.subtipo >= '5' ? '<div class="guide-line"></div>' : '';
+        html = `<div class="${clase}"><div class="column-line active">${elemento}</div>${guia}</div>`;
+    } else {
+        // Párrafos con marcador
+        html = `<div class="${clase}">${elemento}<div class="guide-marker"></div></div>`;
+    }
+    
+    contenido.innerHTML = html;
+};
+
+// Secuencia principal
+const ejecutarSecuencia = () => {
+    if (EL.pausado || EL.completado || EL.elementoActual >= EL.datos.length) {
+        if (EL.elementoActual >= EL.datos.length) completarEjercicio();
+        return;
+    }
+    
+    mostrarElemento(EL.datos[EL.elementoActual]);
+    EL.elementoActual++;
+    
+    EL.intervalo = setTimeout(ejecutarSecuencia, EL.tiempoDisplay);
+};
+
+// Actualizar timer
+const actualizarTimer = () => {
+    if (EL.pausado || !EL.tiempoInicio) return;
+    
+    const transcurrido = Date.now() - EL.tiempoInicio;
+    const minutos = Math.floor(transcurrido / 60000);
+    const segundos = Math.floor((transcurrido % 60000) / 1000);
+    timer.textContent = `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+};
+
+// Iniciar ejercicio
+const iniciar = () => {
+    if (EL.iniciado) return;
+    
+    EL.datos = generarDatos();
+    EL.tiempoInicio = Date.now();
+    EL.iniciado = true;
+    
+    // UI
+    instrucciones.style.display = 'none';
+    pantallaEjercicio.style.display = 'block';
+    controles.style.display = 'block';
+    
+    // Timers
+    setInterval(actualizarTimer, 100);
+    ejecutarSecuencia();
+};
+
+// Pausar/Continuar
+const pausar = () => {
+    EL.pausado = !EL.pausado;
+    const btn = $('pause-el');
+    
+    if (EL.pausado) {
+        clearTimeout(EL.intervalo);
+        btn.innerHTML = '<i class="bi bi-play"></i> Continuar';
+        btn.className = 'btn btn-success';
+    } else {
+        btn.innerHTML = '<i class="bi bi-pause"></i> Pausar';
+        btn.className = 'btn btn-warning';
+        ejecutarSecuencia();
+    }
+};
+
+// Completar ejercicio
+const completarEjercicio = () => {
+    if (EL.completado) return;
+    
+    EL.completado = true;
+    clearTimeout(EL.intervalo);
+    
+    const tiempo = Date.now() - EL.tiempoInicio;
+    
+    // Marcar como completado (sin guardar progreso detallado)
+    fetch('{% url "ejercicios:completar" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: `ejercicio_id=${EL.ejercicioId}&tiempo_ms=${tiempo}`
+    });
+    
+    // Mostrar éxito
+    const minutos = Math.floor(tiempo / 60000);
+    const segundos = Math.floor((tiempo % 60000) / 1000);
+    
+    contenido.innerHTML = `
+        <div class="text-center">
+            <i class="bi bi-check-circle text-success" style="font-size: 4rem;"></i>
+            <h3 class="mt-3 text-success">¡Ejercicio Completado!</h3>
+            <p class="text-muted">Has procesado ${EL.elementoActual} elementos</p>
+            <div class="h4 text-primary mt-3">${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}</div>
+            <div class="mt-4">
+                <a href="{% url 'ejercicios:lista' %}" class="btn btn-primary me-2">Ver Ejercicios</a>
+                <button onclick="location.reload()" class="btn btn-outline-primary">Repetir</button>
+            </div>
+        </div>`;
+    
+    controles.style.display = 'none';
+};
+
+// Salir
+const salir = () => {
+    if (confirm('¿Salir del ejercicio?')) {
+        clearTimeout(EL.intervalo);
+        location.href = '{% url "ejercicios:lista" %}';
+    }
+};
+
+// Event listeners
+document.addEventListener('DOMContentLoaded', () => {
+    $('start-el-exercise').onclick = iniciar;
+    $('pause-el').onclick = pausar;
+    $('complete-el').onclick = completarEjercicio;
+    $('stop-el').onclick = salir;
+});
+</script>
+{% endblock %}

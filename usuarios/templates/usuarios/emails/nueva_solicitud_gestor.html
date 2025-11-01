@@ -1,0 +1,164 @@
+<!-- usuarios/templates/usuarios/emails/nueva_solicitud_gestor.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nueva Solicitud de Cambio de Plan</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #007bff;
+        }
+        .logo {
+            font-size: 2em;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        .alert-title {
+            color: #ffc107;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+        .solicitud-info {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #ffc107;
+            margin: 20px 0;
+        }
+        .user-details {
+            display: grid;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .detail-label {
+            font-weight: 600;
+            color: #666;
+        }
+        .detail-value {
+            color: #333;
+        }
+        .tipo-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        .tipo-solicitar_pro {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .tipo-volver_gratuito {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">CAMPAYO</div>
+            <div class="alert-title">🔔 Nueva Solicitud de Cambio de Plan</div>
+        </div>
+        
+        <div class="content">
+            <p>Hola,</p>
+            
+            <p>Se ha recibido una nueva solicitud de cambio de plan que requiere tu atención.</p>
+            
+            <div class="solicitud-info">
+                <h3 style="margin-top: 0; color: #007bff;">Detalles de la Solicitud</h3>
+                
+                <div class="user-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Usuario:</span>
+                        <span class="detail-value">{{ solicitud.usuario.nombre_completo }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Email:</span>
+                        <span class="detail-value">{{ solicitud.usuario.email }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Plan Actual:</span>
+                        <span class="detail-value">{{ solicitud.usuario.get_plan_display }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Solicitud:</span>
+                        <span class="detail-value">
+                            <span class="tipo-badge tipo-{{ solicitud.tipo_solicitud }}">
+                                {{ solicitud.get_tipo_solicitud_display }}
+                            </span>
+                        </span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Fecha:</span>
+                        <span class="detail-value">{{ solicitud.fecha_solicitud|date:"d/m/Y H:i" }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <p>Puedes gestionar esta solicitud desde el panel de administración:</p>
+            
+            <center>
+                <a href="{{ gestionar_url }}" class="cta-button">Gestionar Solicitudes</a>
+            </center>
+            
+            <p style="font-size: 0.9em; color: #666; margin-top: 30px;">
+                <strong>Acciones disponibles:</strong><br>
+                • Aprobar: Cambia automáticamente el plan del usuario<br>
+                • Rechazar: Cancela la solicitud sin cambios<br>
+                • El usuario será notificado por email del resultado
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Panel de Gestión Campayo</strong><br>
+            Sistema de notificaciones automáticas</p>
+        </div>
+    </div>
+</body>
+</html>

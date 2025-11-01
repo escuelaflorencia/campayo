@@ -1,0 +1,531 @@
+<!-- test_lectura/templates/test_lectura/lista.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tests de Lectura - Campayo{% endblock %}
+
+{% block content %}
+
+<!-- Header de Tests -->
+<div class="tests-header">
+    <h1>Tests de Lectura Rápida</h1>
+    <p>Mide tu velocidad y comprensión con el método Campayo</p>
+</div>
+
+<!-- Tabs de navegación -->
+<div class="tests-tabs">
+    <button class="tab-btn active" data-tab="tests">
+        <i class="bi bi-list-task"></i> Tests
+    </button>
+    <button class="tab-btn" data-tab="evolucion">
+        <i class="bi bi-graph-up"></i> Mi Evolución
+    </button>
+    <button class="tab-btn" data-tab="info">
+        <i class="bi bi-info-circle"></i> Información
+    </button>
+</div>
+
+<!-- Vista: Tests -->
+<div class="tab-content active" id="tab-tests">
+    <div class="tests-grid">
+        {% for test_data in tests_disponibles %}
+        <div class="test-card">
+            <div class="test-card-header">
+                <div class="test-title-row">
+                    <h3 class="test-title">{{ test_data.test.titulo }}</h3>
+                    <span class="test-badge {% if test_data.ya_completado %}completado{% elif not test_data.puede_acceder %}bloqueado{% else %}{{ test_data.test.dificultad }}{% endif %}">
+                        {% if test_data.ya_completado %}
+                            <i class="bi bi-check-circle"></i> Completado
+                        {% elif not test_data.puede_acceder %}
+                            <i class="bi bi-lock"></i> Bloqueado
+                        {% else %}
+                            {{ test_data.test.get_dificultad_display }}
+                        {% endif %}
+                    </span>
+                </div>
+                <p class="test-description">{{ test_data.test.descripcion }}</p>
+            </div>
+
+            <div class="test-card-body">
+                <div class="test-info-grid">
+                    <div class="info-item">
+                        <i class="bi bi-file-text"></i>
+                        <span>{{ test_data.test.numero_palabras }} palabras</span>
+                    </div>
+                    <div class="info-item">
+                        <i class="bi bi-question-circle"></i>
+                        <span>20 preguntas</span>
+                    </div>
+                    {% if test_data.test.texto_autor %}
+                    <div class="info-item">
+                        <i class="bi bi-person"></i>
+                        <span>{{ test_data.test.texto_autor }}</span>
+                    </div>
+                    {% endif %}
+                    {% if test_data.test.requiere_password %}
+                    <div class="info-item">
+                        <i class="bi bi-key"></i>
+                        <span>Requiere código</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {% if test_data.mejor_resultado %}
+                <div class="test-results">
+                    <div class="results-label">Tu mejor resultado:</div>
+                    <div class="results-grid">
+                        <div>
+                            <div class="result-value">{{ test_data.mejor_resultado.velocidad_lectura }}</div>
+                            <div class="result-label">ppm lectura</div>
+                        </div>
+                        <div>
+                            <div class="result-value">{{ test_data.mejor_resultado.velocidad_memorizacion }}</div>
+                            <div class="result-label">ppm memoria</div>
+                        </div>
+                    </div>
+                    <div style="text-align: center; margin-top: 8px;">
+                        <small class="text-muted">
+                            {{ test_data.mejor_resultado.respuestas_correctas }}/20 correctas
+                        </small>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="test-actions">
+                    {% if test_data.ya_completado %}
+                        <a href="{% url 'test_lectura:resultado' test_data.mejor_resultado.sesion_id %}" class="btn btn-outline-primary btn-test">
+                            <i class="bi bi-clipboard-data"></i> Ver Resultados
+                        </a>
+                    {% elif test_data.puede_acceder %}
+                        <a href="{% url 'test_lectura:iniciar' test_data.test.id %}" class="btn btn-primary btn-test">
+                            <i class="bi bi-play"></i> Comenzar Test
+                        </a>
+                    {% else %}
+                        <button class="btn btn-secondary btn-test" disabled>
+                            <i class="bi bi-lock"></i> Bloqueado
+                        </button>
+                    {% endif %}
+                </div>
+
+                {% if not test_data.puede_acceder %}
+                <div style="margin-top: 12px; text-align: center;">
+                    <small class="text-muted">{{ test_data.mensaje_error }}</small>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="empty-state">
+            <i class="bi bi-speedometer2 empty-state-icon"></i>
+            <p class="empty-state-text">No hay tests disponibles</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Vista: Mi Evolución -->
+<div class="tab-content" id="tab-evolucion" style="display: none;">
+    <div class="evolucion-global">
+        <h2>Tu Evolución Global</h2>
+        <p class="text-muted">Progreso en todos tus tests de lectura</p>
+
+        <div class="evolucion-stats">
+            <div class="stat-box">
+                <div class="stat-box-value">{{ total_tests }}</div>
+                <div class="stat-box-label">Tests Completados</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-box-value">{{ mejor_velocidad }}</div>
+                <div class="stat-box-label">Mejor Velocidad (ppm)</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-box-value">{{ mejor_vm }}</div>
+                <div class="stat-box-label">Mejor Vm (ppm)</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-box-value">{{ promedio_comprension }}%</div>
+                <div class="stat-box-label">Comprensión Promedio</div>
+            </div>
+        </div>
+    </div>
+
+    {% for test_nombre, datos in evolucion_por_test.items %}
+    <div class="evolucion-card">
+        <h3>{{ datos.test.titulo }}</h3>
+        <div class="intentos-list">
+            {% for intento in datos.intentos %}
+            <div class="intento-item">
+                <div class="intento-date">
+                    {{ intento.fecha_fin|date:"d/m/Y H:i" }}
+                </div>
+                <div class="intento-stats">
+                    <div class="intento-stat">
+                        <span>V:</span>
+                        <strong>{{ intento.velocidad_lectura }}</strong>
+                    </div>
+                    <div class="intento-stat">
+                        <span>Vm:</span>
+                        <strong>{{ intento.velocidad_memorizacion }}</strong>
+                    </div>
+                    <div class="intento-stat">
+                        <span>{{ intento.respuestas_correctas }}/20</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+        <i class="bi bi-graph-up empty-state-icon"></i>
+        <p class="empty-state-text">Aún no has completado ningún test</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Vista: Información -->
+<div class="tab-content" id="tab-info" style="display: none;">
+    <div class="campayo-info">
+        <h3>
+            <i class="bi bi-book"></i>
+            Método Ramón Campayo
+        </h3>
+        <p><strong>Ramón Campayo</strong> es considerado el mejor mnemonista de la historia. Campeón del mundo de memorización rápida y récord mundial en memorización de decimales, dígitos binarios y naipes.</p>
+        
+        <h4 style="margin-top: 24px; margin-bottom: 12px;">Fórmula de Medición</h4>
+        <p>Los tests miden dos velocidades según el método Campayo:</p>
+        <ul style="margin-left: 24px; line-height: 1.8;">
+            <li><strong>V (Velocidad)</strong>: Palabras por minuto que lees</li>
+            <li><strong>Vm (Velocidad de Memorización)</strong>: V ajustada por comprensión</li>
+        </ul>
+
+        <h4 style="margin-top: 24px; margin-bottom: 12px;">Cálculo de Vm</h4>
+        <p>Vm = V × (respuestas_correctas - 5) / 15</p>
+        <p class="text-small text-muted" style="margin-top: 8px;">Se descuentan las 5 primeras respuestas porque estadísticamente se responderían correctas por azar.</p>
+
+        <h4 style="margin-top: 24px; margin-bottom: 12px;">Niveles de Referencia</h4>
+        <ul style="margin-left: 24px; line-height: 1.8;">
+            <li><strong>200-400 ppm</strong>: Velocidad promedio de lectura</li>
+            <li><strong>400-700 ppm</strong>: Lector rápido</li>
+            <li><strong>700-1000 ppm</strong>: Lector avanzado</li>
+            <li><strong>1000+ ppm</strong>: Lectura fotográfica</li>
+        </ul>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Header específico */
+    .tests-header {
+        background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: var(--space-xl) var(--space-lg);
+        margin-bottom: var(--space-xl);
+        border-radius: var(--radius-lg);
+    }
+
+    .tests-header h1 {
+        color: white;
+        margin-bottom: var(--space-sm);
+    }
+
+    /* Tabs de navegación */
+    .tests-tabs {
+        display: flex;
+        gap: var(--space-sm);
+        margin-bottom: var(--space-xl);
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .tab-btn {
+        padding: var(--space-md) var(--space-lg);
+        background: var(--bg-card);
+        border: 2px solid var(--border);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: var(--transition);
+        white-space: nowrap;
+        font-weight: 500;
+    }
+
+    .tab-btn.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+
+    .tab-btn:hover:not(.active) {
+        border-color: var(--primary);
+    }
+
+    /* Test cards */
+    .tests-grid {
+        display: grid;
+        gap: var(--space-lg);
+    }
+
+    .test-card {
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+        transition: var(--transition);
+    }
+
+    .test-card:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+    }
+
+    .test-card-header {
+        padding: var(--space-lg);
+        border-bottom: 1px solid var(--border);
+    }
+
+    .test-title-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: var(--space-md);
+        margin-bottom: var(--space-sm);
+    }
+
+    .test-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .test-badge {
+        padding: 4px 12px;
+        border-radius: var(--radius-full);
+        font-size: 0.75rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .test-badge.inicial { background: var(--info); color: white; }
+    .test-badge.intermedio { background: var(--secondary); color: white; }
+    .test-badge.avanzado { background: var(--danger); color: white; }
+    .test-badge.completado { background: var(--success); color: white; }
+    .test-badge.bloqueado { background: var(--text-muted); color: white; }
+
+    .test-description {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+
+    .test-card-body {
+        padding: var(--space-lg);
+    }
+
+    .test-info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-md);
+        margin-bottom: var(--space-lg);
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+        font-size: 0.875rem;
+        color: var(--text-muted);
+    }
+
+    .info-item i {
+        color: var(--primary);
+    }
+
+    /* Resultados del usuario */
+    .test-results {
+        background: var(--bg);
+        border-radius: var(--radius-md);
+        padding: var(--space-md);
+        margin-bottom: var(--space-lg);
+    }
+
+    .results-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-bottom: var(--space-sm);
+    }
+
+    .results-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-md);
+        text-align: center;
+    }
+
+    .result-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 2px;
+    }
+
+    .result-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    /* Botones de acción */
+    .test-actions {
+        display: flex;
+        gap: var(--space-sm);
+    }
+
+    .btn-test {
+        flex: 1;
+        min-height: 48px;
+    }
+
+    /* Info Campayo */
+    .campayo-info {
+        background: linear-gradient(135deg, rgba(74, 124, 89, 0.1) 0%, rgba(74, 124, 89, 0.05) 100%);
+        border-left: 4px solid var(--primary);
+        padding: var(--space-lg);
+        border-radius: var(--radius-md);
+        margin-bottom: var(--space-xl);
+    }
+
+    .campayo-info h3 {
+        display: flex;
+        align-items: center;
+        gap: var(--space-sm);
+        margin-bottom: var(--space-md);
+    }
+
+    /* Evolución global */
+    .evolucion-global {
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        padding: var(--space-xl);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: var(--space-xl);
+    }
+
+    .evolucion-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: var(--space-lg);
+        margin-top: var(--space-lg);
+    }
+
+    .stat-box {
+        text-align: center;
+        padding: var(--space-md);
+        background: var(--bg);
+        border-radius: var(--radius-md);
+    }
+
+    .stat-box-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: var(--space-xs);
+    }
+
+    .stat-box-label {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+    }
+
+    /* Vista de evolución individual */
+    .evolucion-card {
+        background: var(--bg-card);
+        border-radius: var(--radius-lg);
+        padding: var(--space-xl);
+        box-shadow: var(--shadow-sm);
+        margin-bottom: var(--space-lg);
+    }
+
+    .intentos-list {
+        margin-top: var(--space-lg);
+    }
+
+    .intento-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: var(--space-md);
+        background: var(--bg);
+        border-radius: var(--radius-md);
+        margin-bottom: var(--space-sm);
+    }
+
+    .intento-date {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+    }
+
+    .intento-stats {
+        display: flex;
+        gap: var(--space-lg);
+        font-size: 0.875rem;
+    }
+
+    .intento-stat {
+        display: flex;
+        align-items: center;
+        gap: var(--space-xs);
+    }
+
+    .intento-stat strong {
+        color: var(--primary);
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+        .tests-header {
+            padding: var(--space-lg) var(--space-md);
+        }
+
+        .test-title {
+            font-size: 1.125rem;
+        }
+
+        .test-info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .evolucion-stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .intento-stats {
+            flex-direction: column;
+            gap: var(--space-xs);
+            align-items: flex-end;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Tabs navigation
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const tab = btn.dataset.tab;
+            
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => {
+                c.style.display = 'none';
+                c.classList.remove('active');
+            });
+            
+            btn.classList.add('active');
+            const target = document.getElementById('tab-' + tab);
+            target.style.display = 'block';
+            target.classList.add('active');
+        });
+    });
+</script>
+{% endblock %}

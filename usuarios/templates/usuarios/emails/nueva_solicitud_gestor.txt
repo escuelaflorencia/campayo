@@ -1,0 +1,27 @@
+Turbo Speed Reader - Nueva Solicitud de Cambio de Plan
+
+Hola,
+
+Se ha recibido una nueva solicitud de cambio de plan que requiere tu atención.
+
+DETALLES DE LA SOLICITUD:
+------------------------
+Usuario: {{ solicitud.usuario.nombre_completo }}
+Email: {{ solicitud.usuario.email }}
+Plan Actual: {{ solicitud.usuario.get_plan_display }}
+Solicitud: {{ solicitud.get_tipo_solicitud_display }}
+Fecha: {{ solicitud.fecha_solicitud|date:"d/m/Y H:i" }}
+
+GESTIONAR SOLICITUD:
+-------------------
+Accede al panel de gestión para procesar esta solicitud:
+{{ gestionar_url }}
+
+ACCIONES DISPONIBLES:
+--------------------
+• Aprobar: Cambia automáticamente el plan del usuario
+• Rechazar: Cancela la solicitud sin cambios
+• El usuario será notificado por email del resultado
+
+Panel de Gestión TSR
+Sistema de notificaciones automáticas

@@ -1,0 +1,697 @@
+{% extends 'base.html' %}
+
+{% block title %}Solicitudes - TSR{% endblock %}
+
+{% block content %}
+<div class="page-container">
+    <!-- Header -->
+    <div class="page-header">
+        <h1>Solicitudes</h1>
+        <div class="stats-mini">
+            <span class="stat-mini warning">
+                <i class="bi bi-clock"></i>
+                {{ stats.pendientes }} pendientes
+            </span>
+            <span class="stat-mini success">
+                <i class="bi bi-check"></i>
+                {{ stats.procesadas_hoy }} hoy
+            </span>
+        </div>
+    </div>
+
+    <!-- Filtros simplificados -->
+    <div class="filters-card">
+        <form method="get" class="filters-form">
+            <div class="filter-row">
+                <select name="estado" class="filter-select">
+                    <option value="">Todos los estados</option>
+                    {% for value, label in estados %}
+                    <option value="{{ value }}" {% if filtro_estado == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+                
+                <select name="tipo" class="filter-select">
+                    <option value="">Todos los tipos</option>
+                    {% for value, label in tipos %}
+                    <option value="{{ value }}" {% if filtro_tipo == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="search-row">
+                <div class="search-box">
+                    <i class="bi bi-search"></i>
+                    <input type="text" 
+                           name="busqueda" 
+                           placeholder="Buscar usuario..."
+                           value="{{ busqueda }}">
+                </div>
+                <button type="submit" class="btn-primary">
+                    <i class="bi bi-search"></i>
+                </button>
+                {% if busqueda or filtro_estado or filtro_tipo %}
+                <a href="{% url 'usuarios:gestionar_solicitudes' %}" class="btn-clear">
+                    <i class="bi bi-x"></i>
+                </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+
+    <!-- Lista de solicitudes -->
+    {% if page_obj.object_list %}
+    <div class="requests-list">
+        {% for solicitud in page_obj.object_list %}
+        <div class="request-card" data-id="{{ solicitud.id }}">
+            <!-- Usuario -->
+            <div class="request-user">
+                <div class="user-avatar">
+                    <i class="bi bi-person"></i>
+                </div>
+                <div class="user-info">
+                    <div class="user-name">{{ solicitud.usuario.nombre_completo }}</div>
+                    <div class="user-email">{{ solicitud.usuario.email }}</div>
+                    <div class="user-plan">
+                        Plan: <span class="plan-badge {% if solicitud.usuario.es_pro %}pro{% else %}free{% endif %}">
+                            {{ solicitud.usuario.get_plan_display }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Detalles de solicitud -->
+            <div class="request-details">
+                <div class="request-type">
+                    <span class="type-badge {{ solicitud.tipo_solicitud }}">
+                        <i class="bi bi-{% if solicitud.tipo_solicitud == 'solicitar_pro' %}arrow-up{% else %}arrow-down{% endif %}"></i>
+                        {{ solicitud.get_tipo_solicitud_display }}
+                    </span>
+                </div>
+                
+                <div class="request-meta">
+                    <span class="meta-date">
+                        <i class="bi bi-calendar"></i>
+                        {{ solicitud.fecha_solicitud|date:"d/m/Y" }}
+                    </span>
+                    {% if solicitud.estado == 'pendiente' %}
+                    <span class="meta-time">
+                        <i class="bi bi-clock"></i>
+                        {{ solicitud.dias_pendiente }} día{{ solicitud.dias_pendiente|pluralize:"s" }}
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <div class="request-status">
+                    <span class="status-badge {{ solicitud.estado }}">
+                        {{ solicitud.get_estado_display }}
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Acciones -->
+            {% if solicitud.estado == 'pendiente' %}
+            <div class="request-actions">
+                <button class="action-btn approve" 
+                        onclick="processRequest({{ solicitud.id }}, 'aprobar')"
+                        title="Aprobar">
+                    <i class="bi bi-check"></i>
+                </button>
+                <button class="action-btn reject" 
+                        onclick="processRequest({{ solicitud.id }}, 'rechazar')"
+                        title="Rechazar">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Paginación simple -->
+    {% if page_obj.has_other_pages %}
+    <div class="pagination-simple">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if filtro_estado %}&estado={{ filtro_estado }}{% endif %}{% if filtro_tipo %}&tipo={{ filtro_tipo }}{% endif %}" 
+           class="page-btn">
+            <i class="bi bi-chevron-left"></i>
+            Anterior
+        </a>
+        {% endif %}
+        
+        <span class="page-info">
+            {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+        </span>
+        
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% if busqueda %}&busqueda={{ busqueda }}{% endif %}{% if filtro_estado %}&estado={{ filtro_estado }}{% endif %}{% if filtro_tipo %}&tipo={{ filtro_tipo }}{% endif %}" 
+           class="page-btn">
+            Siguiente
+            <i class="bi bi-chevron-right"></i>
+        </a>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <!-- Estado vacío -->
+    <div class="empty-state">
+        <i class="bi bi-inbox"></i>
+        <h3>No hay solicitudes</h3>
+        {% if busqueda or filtro_estado or filtro_tipo %}
+        <p>Intenta ajustar los filtros</p>
+        <a href="{% url 'usuarios:gestionar_solicitudes' %}" class="btn-outline">Limpiar filtros</a>
+        {% else %}
+        <p>Aún no hay solicitudes de cambio de plan</p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Botón volver -->
+    <div class="back-section">
+        <a href="{% url 'usuarios:dashboard' %}" class="btn-back">
+            <i class="bi bi-arrow-left"></i>
+            Volver al Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Layout */
+.page-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 var(--space-md) var(--space-xl);
+}
+
+/* Header */
+.page-header {
+    text-align: center;
+    padding: var(--space-lg) 0;
+    margin-bottom: var(--space-lg);
+}
+
+.page-header h1 {
+    margin-bottom: var(--space-md);
+}
+
+.stats-mini {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-lg);
+    flex-wrap: wrap;
+}
+
+.stat-mini {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-full);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.stat-mini.warning {
+    background: rgba(244, 162, 97, 0.15);
+    color: #B45309;
+}
+
+.stat-mini.success {
+    background: rgba(74, 124, 89, 0.15);
+    color: var(--success);
+}
+
+/* Filtros */
+.filters-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+}
+
+.filters-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+}
+
+.filter-select {
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg);
+    font-size: 0.875rem;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(74, 124, 89, 0.1);
+}
+
+.search-row {
+    display: flex;
+    gap: var(--space-sm);
+    align-items: center;
+}
+
+.search-box {
+    position: relative;
+    flex: 1;
+}
+
+.search-box i {
+    position: absolute;
+    left: var(--space-md);
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+}
+
+.search-box input {
+    width: 100%;
+    padding: var(--space-sm) var(--space-md) var(--space-sm) 40px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(74, 124, 89, 0.1);
+}
+
+.btn-primary {
+    padding: var(--space-sm) var(--space-md);
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+}
+
+.btn-clear {
+    padding: var(--space-sm) var(--space-md);
+    background: var(--bg);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: var(--transition);
+}
+
+.btn-clear:hover {
+    background: var(--border);
+    color: var(--text);
+}
+
+/* Lista de solicitudes */
+.requests-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.request-card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    transition: var(--transition);
+}
+
+.request-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+/* Usuario */
+.request-user {
+    display: flex;
+    gap: var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.user-avatar {
+    width: 48px;
+    height: 48px;
+    background: var(--primary);
+    color: white;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.user-name {
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.user-email {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin-bottom: var(--space-xs);
+    word-break: break-word;
+}
+
+.user-plan {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.plan-badge {
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.plan-badge.pro {
+    background: var(--success);
+    color: white;
+}
+
+.plan-badge.free {
+    background: var(--text-muted);
+    color: white;
+}
+
+/* Detalles de solicitud */
+.request-details {
+    margin-bottom: var(--space-lg);
+}
+
+.request-type {
+    margin-bottom: var(--space-md);
+}
+
+.type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.type-badge.solicitar_pro {
+    background: rgba(74, 124, 89, 0.15);
+    color: var(--success);
+}
+
+.type-badge.volver_gratuito {
+    background: rgba(107, 114, 128, 0.15);
+    color: var(--text-muted);
+}
+
+.request-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+    margin-bottom: var(--space-md);
+}
+
+.meta-date,
+.meta-time {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+.status-badge {
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.status-badge.pendiente {
+    background: rgba(244, 162, 97, 0.15);
+    color: #B45309;
+}
+
+.status-badge.procesada {
+    background: rgba(74, 124, 89, 0.15);
+    color: var(--success);
+}
+
+.status-badge.cancelada {
+    background: rgba(231, 111, 81, 0.15);
+    color: var(--danger);
+}
+
+/* Acciones */
+.request-actions {
+    display: flex;
+    gap: var(--space-sm);
+    justify-content: center;
+}
+
+.action-btn {
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.action-btn.approve {
+    background: var(--success);
+    color: white;
+}
+
+.action-btn.approve:hover {
+    background: var(--primary-dark);
+    transform: scale(1.05);
+}
+
+.action-btn.reject {
+    background: var(--danger);
+    color: white;
+}
+
+.action-btn.reject:hover {
+    background: #C53030;
+    transform: scale(1.05);
+}
+
+/* Paginación */
+.pagination-simple {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-lg) 0;
+}
+
+.page-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--primary);
+    color: white;
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.page-btn:hover {
+    background: var(--primary-dark);
+    color: white;
+}
+
+.page-info {
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+/* Estado vacío */
+.empty-state {
+    text-align: center;
+    padding: var(--space-2xl);
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: var(--text-muted);
+    opacity: 0.5;
+    margin-bottom: var(--space-lg);
+}
+
+.empty-state h3 {
+    margin-bottom: var(--space-sm);
+    color: var(--text-muted);
+}
+
+.empty-state p {
+    color: var(--text-muted);
+    margin-bottom: var(--space-lg);
+}
+
+.btn-outline {
+    padding: var(--space-sm) var(--space-lg);
+    border: 1px solid var(--primary);
+    background: none;
+    color: var(--primary);
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.btn-outline:hover {
+    background: var(--primary);
+    color: white;
+}
+
+/* Sección volver */
+.back-section {
+    text-align: center;
+    padding-top: var(--space-lg);
+}
+
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-md) var(--space-lg);
+    background: var(--bg);
+    color: var(--text);
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.btn-back:hover {
+    background: var(--border);
+    color: var(--text);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .filter-row {
+        grid-template-columns: 1fr;
+    }
+    
+    .request-user {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    
+    .user-avatar {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+    }
+    
+    .request-meta {
+        justify-content: center;
+    }
+    
+    .pagination-simple {
+        flex-direction: column;
+        gap: var(--space-md);
+    }
+    
+    .page-info {
+        order: -1;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function processRequest(requestId, action) {
+    const confirmMsg = action === 'aprobar' ? 
+        '¿Confirmas que quieres aprobar esta solicitud?' : 
+        '¿Confirmas que quieres rechazar esta solicitud?';
+    
+    if (!confirm(confirmMsg)) {
+        return;
+    }
+    
+    fetch('{% url "usuarios:procesar_solicitud_plan" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `solicitud_id=${requestId}&accion=${action}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage('success', data.mensaje);
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showMessage('error', data.error || 'Error procesando solicitud');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showMessage('error', 'Error de conexión');
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

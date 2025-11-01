@@ -1,0 +1,780 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - TSR{% endblock %}
+
+{% block content %}
+
+{% if es_gestor %}
+    <!-- DASHBOARD GESTOR - Simplificado -->
+    <div class="page-header">
+        <h1>Panel Gestor</h1>
+        <p class="subtitle">Administración de usuarios</p>
+    </div>
+
+    <!-- Alertas importantes -->
+    {% if solicitudes_pendientes > 0 %}
+    <div class="alert alert-warning">
+        <i class="bi bi-bell"></i>
+        <div>
+            <strong>{{ solicitudes_pendientes }} solicitud{{ solicitudes_pendientes|pluralize:"es" }} pendiente{{ solicitudes_pendientes|pluralize:"s" }}</strong>
+            <a href="{% url 'usuarios:gestionar_solicitudes' %}" class="alert-action">Ver</a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Acciones principales -->
+    <div class="quick-actions">
+        <a href="{% url 'usuarios:gestionar_solicitudes' %}" class="action-card warning">
+            <i class="bi bi-hand-thumbs-up"></i>
+            <div>
+                <h3>Solicitudes</h3>
+                <p>{{ solicitudes_pendientes }} pendientes</p>
+            </div>
+            <i class="bi bi-chevron-right"></i>
+        </a>
+
+        <a href="#user-search" class="action-card primary">
+            <i class="bi bi-people"></i>
+            <div>
+                <h3>Usuarios</h3>
+                <p>Gestionar planes</p>
+            </div>
+            <i class="bi bi-chevron-right"></i>
+        </a>
+    </div>
+
+    <!-- Búsqueda usuarios -->
+    <div class="card" id="user-search">
+        <div class="card-header">
+            <h2>Buscar Usuario</h2>
+        </div>
+        <div class="card-body">
+            <form hx-post="{% url 'usuarios:buscar_usuarios' %}" 
+                  hx-target="#user-results" 
+                  hx-trigger="input changed delay:500ms from:#search, submit">
+                <div class="search-box">
+                    <i class="bi bi-search"></i>
+                    <input type="text" 
+                           name="busqueda" 
+                           id="search"
+                           placeholder="Nombre, email..."
+                           autocomplete="off">
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Resultados usuarios -->
+    <div class="card">
+        <div class="card-header">
+            <h2>Usuarios</h2>
+        </div>
+        <div class="card-body">
+            <div id="user-results">
+                {% include 'usuarios/partials/lista_usuarios.html' %}
+            </div>
+        </div>
+    </div>
+
+{% else %}
+    <!-- DASHBOARD USUARIO - Simplificado -->
+    
+    <!-- Bienvenida -->
+    <div class="welcome-section">
+        <div class="welcome-header">
+            <h1 class="text-light">¡Hola, {{ user.nombre }}!</h1>
+        </div>
+        <div class="daily-quote">
+            <i class="bi bi-quote"></i>
+            <p id="quote">{{ frase_motivacional }}</p>
+        </div>
+    </div>
+
+    <!-- Estado del plan -->
+    {% if tiene_solicitud_pendiente %}
+    <div class="alert alert-info">
+        <i class="bi bi-clock"></i>
+        <div>
+            <strong>Solicitud pendiente</strong>
+            <p>Tu solicitud está siendo revisada</p>
+            <button class="btn-simple" onclick="cancelRequest()">Cancelar</button>
+        </div>
+    </div>
+    {% else %}
+    <div class="plan-card">
+        <div class="plan-info">
+            <div class="plan-icon">
+                <i class="bi bi-{% if user.es_pro %}star{% else %}person{% endif %}"></i>
+            </div>
+            <div>
+                <h3>Plan {{ plan_actual }}</h3>
+                <p>{% if user.es_pro %}Acceso completo{% else %}Niveles 1-3{% endif %}</p>
+            </div>
+        </div>
+        <button class="btn-outline" onclick="requestPlanChange()">
+            {% if user.es_pro %}Cambiar a Gratuito{% else %}Solicitar Pro{% endif %}
+        </button>
+    </div>
+    {% endif %}
+
+    <!-- Estadísticas -->
+    <div class="stats-section">
+        <h2>Tu Progreso</h2>
+        
+        <div class="stat-card">
+            <div class="stat-icon">
+                <i class="bi bi-speedometer2"></i>
+            </div>
+            <div>
+                <div class="stat-number">{{ mejor_velocidad }}</div>
+                <div class="stat-label">Mejor velocidad (ppm)</div>
+            </div>
+        </div>
+
+        {% if progresos_recientes %}
+        <div class="progress-list">
+            <h3>Últimas sesiones</h3>
+            {% for progreso in progresos_recientes %}
+            <div class="progress-item">
+                <div class="progress-icon">
+                    <i class="bi bi-book"></i>
+                </div>
+                <div class="progress-details">
+                    <div class="progress-name">{{ progreso.test_nombre|title }}</div>
+                    <div class="progress-meta">
+                        {{ progreso.velocidad_lectura }} ppm • {{ progreso.fecha_realizacion|date:"d/m" }}
+                    </div>
+                </div>
+                {% if progreso.completado %}
+                <i class="bi bi-check-circle text-success"></i>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <p>Aún no has completado tests</p>
+            <p class="text-muted">¡Comienza tu entrenamiento!</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Acciones rápidas -->
+    <div class="quick-actions">
+        <a href="{% url 'ejercicios:lista' %}" class="action-card primary">
+            <i class="bi bi-play-circle"></i>
+            <div>
+                <h3>Entrenar</h3>
+                <p>Ejercicios de lectura</p>
+            </div>
+            <i class="bi bi-chevron-right"></i>
+        </a>
+
+        <a href="{% url 'test_lectura:lista_tests' %}" class="action-card secondary">
+            <i class="bi bi-speedometer2"></i>
+            <div>
+                <h3>Medir</h3>
+                <p>Tests de velocidad</p>
+            </div>
+            <i class="bi bi-chevron-right"></i>
+        </a>
+
+        <a href="{% url 'ejercicios:mi_progreso' %}" class="action-card accent">
+            <i class="bi bi-graph-up"></i>
+            <div>
+                <h3>Progreso</h3>
+                <p>Ver estadísticas</p>
+            </div>
+            <i class="bi bi-chevron-right"></i>
+        </a>
+    </div>
+
+{% endif %}
+
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* Page Layout */
+.page-header {
+    padding: var(--space-lg) var(--space-md);
+    text-align: center;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white;
+    margin-bottom: var(--space-lg);
+}
+
+.page-header h1 {
+    margin-bottom: var(--space-xs);
+}
+
+.subtitle {
+    opacity: 0.9;
+    margin: 0;
+}
+
+/* Welcome Section */
+.welcome-section {
+    padding: var(--space-lg) var(--space-md);
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white;
+    border-radius: var(--radius-lg);
+    margin: var(--space-md) var(--space-md) var(--space-lg);
+}
+
+.welcome-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-md);
+}
+
+.welcome-header h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #ffffff !important;
+}
+
+.plan-badge {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-full);
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.plan-badge.pro {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.plan-badge.free {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.daily-quote {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    opacity: 0.95;
+}
+
+.daily-quote i {
+    font-size: 1.25rem;
+    margin-top: 2px;
+}
+
+.daily-quote p {
+    margin: 0;
+    font-style: italic;
+    line-height: 1.5;
+}
+
+/* Alerts */
+.alert {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-md);
+    margin: var(--space-md);
+    border-radius: var(--radius-md);
+    border: 1px solid;
+}
+
+.alert.alert-warning {
+    background: rgba(244, 162, 97, 0.1);
+    border-color: var(--warning);
+    color: #8B4513;
+}
+
+.alert.alert-info {
+    background: rgba(107, 155, 209, 0.1);
+    border-color: var(--info);
+    color: #2563EB;
+}
+
+.alert i {
+    font-size: 1.25rem;
+}
+
+.alert-action {
+    color: inherit;
+    font-weight: 600;
+    margin-left: var(--space-sm);
+    text-decoration: underline;
+}
+
+/* Plan Card */
+.plan-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-lg);
+    margin: var(--space-md);
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+}
+
+.plan-info {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+}
+
+.plan-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--primary);
+    color: white;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+}
+
+.plan-info h3 {
+    margin: 0 0 var(--space-xs) 0;
+    font-size: 1.125rem;
+}
+
+.plan-info p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+}
+
+/* Quick Actions */
+.quick-actions {
+    display: grid;
+    gap: var(--space-md);
+    padding: 0 var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+@media (min-width: 640px) {
+    .quick-actions {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 768px) {
+    .quick-actions {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.action-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-lg);
+    border-radius: var(--radius-lg);
+    color: white;
+    text-decoration: none;
+    transition: var(--transition);
+    box-shadow: var(--shadow-sm);
+}
+
+.action-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    color: white;
+}
+
+.action-card.primary {
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+}
+
+.action-card.secondary {
+    background: linear-gradient(135deg, var(--secondary), #F4B775);
+}
+
+.action-card.accent {
+    background: linear-gradient(135deg, var(--accent), #EA8365);
+}
+
+.action-card.warning {
+    background: linear-gradient(135deg, var(--warning), #F4B775);
+}
+
+.action-card i:first-child {
+    font-size: 2rem;
+}
+
+.action-card i:last-child {
+    font-size: 1.25rem;
+    opacity: 0.7;
+    margin-left: auto;
+}
+
+.action-card h3 {
+    margin: 0 0 var(--space-xs) 0;
+    font-size: 1.125rem;
+    font-weight: 700;
+}
+
+.action-card p {
+    margin: 0;
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+/* Cards */
+.card {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    margin: var(--space-md);
+    overflow: hidden;
+}
+
+.card-header {
+    padding: var(--space-lg) var(--space-lg) var(--space-md);
+    border-bottom: 1px solid var(--border);
+}
+
+.card-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.card-body {
+    padding: var(--space-lg);
+}
+
+/* Search Box */
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-box i {
+    position: absolute;
+    left: var(--space-md);
+    color: var(--text-muted);
+    z-index: 1;
+}
+
+.search-box input {
+    width: 100%;
+    padding: var(--space-md) var(--space-md) var(--space-md) 40px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    transition: var(--transition);
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(74, 124, 89, 0.1);
+}
+
+/* Stats Section */
+.stats-section {
+    margin: var(--space-md);
+}
+
+.stats-section h2 {
+    padding: 0 var(--space-md);
+    margin-bottom: var(--space-lg);
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-lg);
+    padding: var(--space-lg);
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    margin-bottom: var(--space-lg);
+}
+
+.stat-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary);
+    line-height: 1;
+}
+
+.stat-label {
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin-top: var(--space-xs);
+}
+
+/* Progress List */
+.progress-list {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+    overflow: hidden;
+}
+
+.progress-list h3 {
+    padding: var(--space-lg) var(--space-lg) var(--space-md);
+    margin: 0;
+    font-size: 1.125rem;
+    border-bottom: 1px solid var(--border);
+}
+
+.progress-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md) var(--space-lg);
+    border-bottom: 1px solid var(--border);
+}
+
+.progress-item:last-child {
+    border-bottom: none;
+}
+
+.progress-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--bg);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+}
+
+.progress-details {
+    flex: 1;
+}
+
+.progress-name {
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.progress-meta {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: var(--space-2xl);
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border);
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: var(--text-muted);
+    opacity: 0.5;
+    margin-bottom: var(--space-md);
+}
+
+.empty-state p {
+    margin-bottom: var(--space-xs);
+}
+
+.empty-state .text-muted {
+    font-size: 0.875rem;
+}
+
+/* Buttons */
+.btn-simple {
+    background: none;
+    border: 1px solid var(--border);
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: var(--transition);
+}
+
+.btn-simple:hover {
+    background: var(--border);
+}
+
+.btn-outline {
+    background: none;
+    border: 1px solid var(--primary);
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
+    color: var(--primary);
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.btn-outline:hover {
+    background: var(--primary);
+    color: white;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .welcome-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--space-sm);
+    }
+    
+    .plan-card {
+        flex-direction: column;
+        gap: var(--space-md);
+        align-items: stretch;
+    }
+    
+    .action-card {
+        padding: var(--space-md);
+    }
+    
+    .action-card i:first-child {
+        font-size: 1.5rem;
+    }
+}
+
+.text-success {
+    color: var(--success);
+}
+
+.text-muted {
+    color: var(--text-muted);
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Cargar frase motivacional
+document.addEventListener('DOMContentLoaded', function() {
+    {% if not es_gestor %}
+    const userName = '{{ user.nombre|escapejs }}';
+    
+    const frases = [
+        'Tu mente es capaz de mucho más de lo que imaginas, {nombre}.',
+        'La lectura rápida es un superpoder, {nombre}. ¡Úsalo!',
+        'Cada página leída es un paso hacia la excelencia, {nombre}.',
+        'Tu concentración mejora con cada entrenamiento, {nombre}.',
+        'La velocidad sin comprensión no es nada. Tú tienes ambas, {nombre}.'
+    ];
+    
+    const randomFrase = frases[Math.floor(Math.random() * frases.length)];
+    const frasePersonalizada = randomFrase.replace('{nombre}', userName);
+    // document.getElementById('quote').textContent = frasePersonalizada; // Comentado: ahora se carga desde el servidor
+    {% endif %}
+});
+
+// Funciones para cambio de plan
+function requestPlanChange() {
+    fetch('{% url "usuarios:solicitar_cambio_plan" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage('success', data.mensaje);
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showMessage('error', data.error || 'Error en la solicitud');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showMessage('error', 'Error de conexión');
+    });
+}
+
+function cancelRequest() {
+    fetch('{% url "usuarios:cancelar_solicitud_plan" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/x-www-form-urlencoded',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showMessage('success', data.mensaje);
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showMessage('error', data.error || 'Error al cancelar');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showMessage('error', 'Error de conexión');
+    });
+}
+
+// Utilidades
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Cambiar plan usuario (para gestores)
+function cambiarPlanUsuario(userId, currentPlan) {
+    const newPlan = currentPlan === 'pro' ? 'gratuito' : 'pro';
+    
+    fetch('/usuarios/api/cambiar-plan/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `usuario_id=${userId}&nuevo_plan=${newPlan}`
+    })
+    .then(response => response.text())
+    .then(html => {
+        const cardElement = document.querySelector(`[data-user-id="${userId}"]`);
+        if (cardElement) {
+            cardElement.outerHTML = html;
+        }
+        showMessage('success', 'Plan actualizado');
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showMessage('error', 'Error cambiando plan');
+    });
+}
+</script>
+{% endblock %}

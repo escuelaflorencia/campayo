@@ -1,0 +1,450 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Turbo Speed Reader - Plataforma de lectura rápida y entrenamiento de memoria">
+    <meta name="theme-color" content="#4A7C59">
+    <title>{% block title %}Turbo Speed Reader - Lectura Rápida{% endblock %}</title>
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.8"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" role="navigation" aria-label="Navegación principal">
+        <div class="navbar-container">
+            <a href="{% url 'home' %}" class="navbar-brand" aria-label="Turbo Speed Reader - Inicio">
+                <i class="bi bi-lightning-charge" aria-hidden="true"></i>
+                <span>TSR</span>
+            </a>
+            
+            <button 
+                class="navbar-toggler" 
+                type="button" 
+                id="navbarToggler"
+                aria-label="Abrir menú de navegación"
+                aria-expanded="false"
+                aria-controls="navbarMenu">
+                <i class="bi bi-list navbar-toggler-icon" aria-hidden="true"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Overlay para cerrar menú al hacer clic fuera -->
+    <div class="navbar-overlay" id="navbarOverlay" aria-hidden="true"></div>
+
+    <!-- Menú desplegable -->
+    <div class="navbar-menu" id="navbarMenu" role="dialog" aria-labelledby="menuTitle">
+        <div class="navbar-menu-header">
+            <h2 id="menuTitle" class="navbar-brand">
+                <i class="bi bi-lightning-charge" aria-hidden="true"></i>
+                <span>TSR</span>
+            </h2>
+            <button 
+                class="navbar-menu-close" 
+                id="navbarMenuClose"
+                aria-label="Cerrar menú">
+                <i class="bi bi-x-lg" aria-hidden="true"></i>
+            </button>
+        </div>
+        
+        <ul class="navbar-nav">
+            {% if user.is_authenticated %}
+                <!-- Usuario autenticado -->
+                <li class="nav-item">
+                    <a href="{% url 'usuarios:dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                        <i class="bi bi-house-door" aria-hidden="true"></i>
+                        <span>Inicio</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'ejercicios:lista' %}" class="nav-link {% if 'ejercicios' in request.path %}active{% endif %}">
+                        <i class="bi bi-trophy" aria-hidden="true"></i>
+                        <span>Entrenamiento</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'test_lectura:lista_tests' %}" class="nav-link {% if 'test_lectura' in request.path %}active{% endif %}">
+                        <i class="bi bi-speedometer2" aria-hidden="true"></i>
+                        <span>Tests</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'ejercicios:mi_progreso' %}" class="nav-link {% if request.resolver_match.url_name == 'mi_progreso' %}active{% endif %}">
+                        <i class="bi bi-graph-up" aria-hidden="true"></i>
+                        <span>Progreso</span>
+                    </a>
+                </li>
+                
+                {% if user.es_gestor %}
+                <div class="nav-divider" role="separator"></div>
+                <li class="nav-item">
+                    <a href="{% url 'usuarios:gestionar_usuarios' %}" class="nav-link">
+                        <i class="bi bi-people" aria-hidden="true"></i>
+                        <span>Gestión</span>
+                    </a>
+                </li>
+                {% endif %}
+                
+                <div class="nav-divider" role="separator"></div>
+                
+                <li class="nav-item">
+                    <a href="{% url 'usuarios:editar_perfil' %}" class="nav-link">
+                        <i class="bi bi-person-gear" aria-hidden="true"></i>
+                        <span>Mi Perfil</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'usuarios:cambiar_password' %}" class="nav-link">
+                        <i class="bi bi-key" aria-hidden="true"></i>
+                        <span>Cambiar Contraseña</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'usuarios:logout' %}" class="nav-link">
+                        <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                        <span>Cerrar Sesión</span>
+                    </a>
+                </li>
+            {% else %}
+                <!-- Usuario no autenticado -->
+                <li class="nav-item">
+                    <a href="{% url 'usuarios:login' %}" class="nav-link">
+                        <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+                        <span>Iniciar Sesión</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="{% url 'usuarios:registro' %}" class="nav-link">
+                        <i class="bi bi-person-plus" aria-hidden="true"></i>
+                        <span>Registrarse</span>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </div>
+
+    <!-- Messages / Alerts -->
+    {% if messages %}
+        <div class="container" style="margin-top: 16px;">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade-in" role="alert">
+                    <i class="alert-icon 
+                        {% if message.tags == 'error' or message.tags == 'danger' %}bi bi-exclamation-triangle
+                        {% elif message.tags == 'success' %}bi bi-check-circle
+                        {% elif message.tags == 'warning' %}bi bi-exclamation-circle
+                        {% else %}bi bi-info-circle{% endif %}" 
+                        aria-hidden="true"></i>
+                    <div class="alert-content">
+                        {{ message }}
+                    </div>
+                    <button type="button" class="alert-close" data-dismiss="alert" aria-label="Cerrar alerta">
+                        <i class="bi bi-x" aria-hidden="true"></i>
+                    </button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="main-container" role="main">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer" role="contentinfo">
+        <div class="footer-container">
+            <div class="footer-content">
+                <div>
+                    <div class="footer-brand">TSR</div>
+                    <p class="footer-text">Plataforma de lectura rápida y entrenamiento de memoria basada en el método de Ramón Campayo.</p>
+                </div>
+                <nav class="footer-links" aria-label="Enlaces del pie de página">
+                    <a href="#" class="footer-link">Ayuda</a>
+                    <a href="#" class="footer-link">Privacidad</a>
+                    <a href="#" class="footer-link">Contacto</a>
+                </nav>
+            </div>
+            <div class="footer-copyright">
+                © 2024 Ramón Campayo. Todos los derechos reservados.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        // ============================================================================
+        // FUNCIONES GLOBALES
+        // ============================================================================
+        
+        // Función para obtener CSRF token
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Función para mostrar mensajes/alertas
+        function showMessage(tipo, mensaje) {
+            const container = document.querySelector('.main-container') || document.body;
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${tipo} alert-dismissible fade-in`;
+            alertDiv.innerHTML = `
+                <i class="alert-icon bi bi-${tipo === 'success' ? 'check-circle' : 'exclamation-triangle'}"></i>
+                <div class="alert-content">${mensaje}</div>
+                <button type="button" class="alert-close" onclick="this.parentElement.remove()">
+                    <i class="bi bi-x"></i>
+                </button>
+            `;
+            container.insertBefore(alertDiv, container.firstChild);
+            
+            // Auto-cerrar después de 5 segundos
+            setTimeout(() => {
+                if (alertDiv.parentElement) {
+                    alertDiv.remove();
+                }
+            }, 5000);
+        }
+
+        // Alias para compatibilidad
+        function mostrarAlerta(tipo, mensaje) {
+            showMessage(tipo, mensaje);
+        }
+
+        // Función para solicitar cambio de plan (usuarios)
+        function requestPlanChange() {
+            const url = window.TSR_URLS && window.TSR_URLS.solicitar_cambio_plan || '/usuarios/solicitar-cambio-plan/';
+            
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('success', data.mensaje);
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showMessage('error', data.error || 'Error procesando solicitud');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('error', 'Error de conexión. Intenta de nuevo.');
+            });
+        }
+
+        // Función para cancelar solicitud de plan
+        function cancelPlanRequest() {
+            const url = window.TSR_URLS && window.TSR_URLS.cancelar_solicitud_plan || '/usuarios/cancelar-solicitud-plan/';
+            
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('success', data.mensaje);
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showMessage('error', data.error || 'Error procesando solicitud');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('error', 'Error de conexión. Intenta de nuevo.');
+            });
+        }
+
+        // Función para cambiar plan de usuario (gestores)
+        function cambiarPlanUsuario(usuarioId, planActual) {
+            const nuevoPlan = planActual === 'pro' ? 'gratuito' : 'pro';
+            const url = window.TSR_URLS && window.TSR_URLS.cambiar_plan_usuario || '/usuarios/cambiar-plan-usuario/';
+            
+            // Mostrar indicador de carga
+            const button = event.target.closest('button');
+            const originalText = button.innerHTML;
+            button.innerHTML = '<i class="bi bi-hourglass-split"></i> Cambiando...';
+            button.disabled = true;
+            
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken'),
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `usuario_id=${usuarioId}&nuevo_plan=${nuevoPlan}`
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.text();
+            })
+            .then(html => {
+                const cardElement = document.querySelector(`[data-user-id="${usuarioId}"]`);
+                if (cardElement) {
+                    cardElement.outerHTML = html;
+                    showMessage('success', `Plan cambiado a ${nuevoPlan}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('error', 'Error cambiando plan. Verifica permisos.');
+                
+                // Restaurar botón
+                button.innerHTML = originalText;
+                button.disabled = false;
+            });
+        }
+
+        // ============================================================================
+        // MENÚ DE NAVEGACIÓN
+        // ============================================================================
+        (function() {
+            const toggler = document.getElementById('navbarToggler');
+            const menu = document.getElementById('navbarMenu');
+            const overlay = document.getElementById('navbarOverlay');
+            const closeBtn = document.getElementById('navbarMenuClose');
+            
+            if (!toggler || !menu || !overlay || !closeBtn) return;
+            
+            function openMenu() {
+                menu.classList.add('active');
+                overlay.classList.add('active');
+                toggler.setAttribute('aria-expanded', 'true');
+                document.body.style.overflow = 'hidden';
+            }
+            
+            function closeMenu() {
+                menu.classList.remove('active');
+                overlay.classList.remove('active');
+                toggler.setAttribute('aria-expanded', 'false');
+                document.body.style.overflow = '';
+            }
+            
+            toggler.addEventListener('click', openMenu);
+            closeBtn.addEventListener('click', closeMenu);
+            overlay.addEventListener('click', closeMenu);
+            
+            // Cerrar al presionar Escape
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && menu.classList.contains('active')) {
+                    closeMenu();
+                }
+            });
+            
+            // Cerrar menú al hacer clic en un enlace (mobile)
+            const navLinks = menu.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', closeMenu);
+            });
+        })();
+
+        // ============================================================================
+        // CERRAR ALERTAS
+        // ============================================================================
+        (function() {
+            const closeButtons = document.querySelectorAll('.alert-close');
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const alert = this.closest('.alert');
+                    alert.style.opacity = '0';
+                    alert.style.transform = 'translateY(-10px)';
+                    setTimeout(() => {
+                        alert.remove();
+                    }, 200);
+                });
+            });
+            
+            // Auto-cerrar alertas después de 5 segundos (opcional)
+            const alerts = document.querySelectorAll('.alert-dismissible');
+            alerts.forEach(alert => {
+                setTimeout(() => {
+                    const closeBtn = alert.querySelector('.alert-close');
+                    if (closeBtn) {
+                        closeBtn.click();
+                    }
+                }, 5000);
+            });
+        })();
+
+        // ============================================================================
+        // HTMX EVENT HANDLERS
+        // ============================================================================
+        document.body.addEventListener('htmx:responseError', function(evt) {
+            console.error('HTMX Error:', evt.detail);
+            
+            // Manejar errores específicos
+            const status = evt.detail.xhr.status;
+            let mensaje = 'Error en la conexión. Por favor, intenta de nuevo.';
+            
+            if (status === 403) {
+                mensaje = 'No tienes permisos para realizar esta acción.';
+            } else if (status === 404) {
+                mensaje = 'Recurso no encontrado.';
+            } else if (status >= 500) {
+                mensaje = 'Error del servidor. Intenta más tarde.';
+            }
+            
+            showMessage('error', mensaje);
+        });
+
+        document.body.addEventListener('htmx:beforeRequest', function(evt) {
+            evt.detail.elt.classList.add('htmx-request');
+        });
+
+        document.body.addEventListener('htmx:afterRequest', function(evt) {
+            evt.detail.elt.classList.remove('htmx-request');
+        });
+
+        // Añadir token CSRF a todas las peticiones HTMX
+        document.body.addEventListener('htmx:configRequest', function(evt) {
+            evt.detail.headers['X-CSRFToken'] = getCookie('csrftoken');
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+    
+    <!-- URL Configuration for JavaScript -->
+    <script>
+        // Configuración global de URLs
+        window.TSR_URLS = {
+            // URLs por defecto - pueden ser sobrescritas por templates específicas
+            buscar_usuarios: '/usuarios/api/buscar/',
+            cambiar_plan_usuario: '/usuarios/cambiar-plan-usuario/',
+            solicitar_cambio_plan: '/usuarios/solicitar-cambio-plan/',
+            cancelar_solicitud_plan: '/usuarios/cancelar-solicitud-plan/'
+        };
+        
+        // Permitir sobrescribir URLs desde templates
+        {% block url_config %}{% endblock %}
+    </script>
+</body>
+</html>

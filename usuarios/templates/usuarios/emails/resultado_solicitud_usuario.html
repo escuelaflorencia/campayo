@@ -1,0 +1,205 @@
+<!-- usuarios/templates/usuarios/emails/resultado_solicitud_usuario.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if aprobada %}¡Plan Actualizado!{% else %}Solicitud Procesada{% endif %}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .logo {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        .status-title {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+        }
+        .status-aprobada {
+            color: #28a745;
+        }
+        .status-rechazada {
+            color: #dc3545;
+        }
+        .result-box {
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .result-aprobada {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        .result-rechazada {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        .plan-info {
+            background-color: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .plan-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 1.1em;
+            margin: 10px 0;
+        }
+        .plan-pro {
+            background-color: #28a745;
+            color: white;
+        }
+        .plan-gratuito {
+            background-color: #6c757d;
+            color: white;
+        }
+        .benefits {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .benefits ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        .benefits li {
+            padding: 5px 0;
+            position: relative;
+            padding-left: 25px;
+        }
+        .benefits li:before {
+            content: "✓";
+            color: #28a745;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+        .cta-button {
+            display: inline-block;
+            background-color: #007bff;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+        .footer {
+            text-align: center;
+            color: #666;
+            font-size: 0.9em;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">Turbo Speed Reader</div>
+            <div class="status-title {% if aprobada %}status-aprobada{% else %}status-rechazada{% endif %}">
+                {% if aprobada %}
+                    🎉 ¡Tu plan ha sido actualizado!
+                {% else %}
+                    📋 Solicitud procesada
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="content">
+            <p>Hola {{ usuario.nombre }},</p>
+            
+            {% if aprobada %}
+            <div class="result-box result-aprobada">
+                <h3 style="margin: 0; color: #155724;">¡Solicitud Aprobada!</h3>
+                <p style="margin: 10px 0 0 0;">Tu solicitud de cambio de plan ha sido aprobada.</p>
+            </div>
+            
+            <div class="plan-info">
+                <p><strong>Tu nuevo plan:</strong></p>
+                <div class="plan-badge {% if usuario.es_pro %}plan-pro{% else %}plan-gratuito{% endif %}">
+                    {% if usuario.es_pro %}⭐ Plan Pro{% else %}👤 Plan Gratuito{% endif %}
+                </div>
+            </div>
+            
+            {% if usuario.es_pro %}
+            <div class="benefits">
+                <h3 style="margin-top: 0; color: #007bff;">🎯 Ahora puedes disfrutar de:</h3>
+                <ul>
+                    <li>Acceso completo a todos los niveles de entrenamiento (1-9)</li>
+                    <li>Ejercicios avanzados de lectura rápida</li>
+                    <li>Técnicas especializadas de memoria</li>
+                    <li>Seguimiento detallado de tu progreso</li>
+                    <li>Contenido exclusivo del método Campayo</li>
+                </ul>
+            </div>
+            {% else %}
+            <div class="benefits">
+                <h3 style="margin-top: 0; color: #007bff;">📚 Tu plan gratuito incluye:</h3>
+                <ul>
+                    <li>Acceso a niveles de entrenamiento 1-3</li>
+                    <li>Test inicial de velocidad de lectura</li>
+                    <li>Ejercicios básicos de entrenamiento</li>
+                    <li>Seguimiento de progreso básico</li>
+                </ul>
+            </div>
+            {% endif %}
+            
+            {% else %}
+            <div class="result-box result-rechazada">
+                <h3 style="margin: 0; color: #721c24;">Solicitud No Aprobada</h3>
+                <p style="margin: 10px 0 0 0;">Tu solicitud de cambio de plan no ha sido aprobada en este momento.</p>
+            </div>
+            
+            <div class="plan-info">
+                <p><strong>Tu plan actual continúa siendo:</strong></p>
+                <div class="plan-badge {% if usuario.es_pro %}plan-pro{% else %}plan-gratuito{% endif %}">
+                    {% if usuario.es_pro %}⭐ Plan Pro{% else %}👤 Plan Gratuito{% endif %}
+                </div>
+            </div>
+            
+            <p>Puedes realizar una nueva solicitud en cualquier momento desde tu dashboard si deseas cambiar de plan en el futuro.</p>
+            {% endif %}
+            
+            <center>
+                <a href="{{ dashboard_url }}" class="cta-button">Ir a Mi Dashboard</a>
+            </center>
+            
+            <p style="font-size: 0.9em; color: #666;">
+                Si tienes alguna pregunta sobre tu plan o necesitas ayuda, no dudes en contactarnos.
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p><strong>Equipo TSR</strong><br>
+            Tu plataforma de lectura rápida</p>
+        </div>
+    </div>
+</body>
+</html>
